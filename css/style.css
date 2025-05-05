@@ -1,0 +1,52 @@
+/* Tipografía y fondo */
+body {
+  font-family: 'Roboto Slab', serif;
+  background: #1e1e2f;
+  color: #e0e0e0;
+}
+/* Título principal */
+#mainTitle {
+  font-size: 2.5rem;
+  color: #ffdd57;
+  text-shadow: 2px 2px 8px rgba(0,0,0,0.7);
+  animation: glow 2s infinite ease-in-out;
+}
+@keyframes glow {
+  0%,100% { text-shadow: 0 0 10px #ffdd57; }
+  50%   { text-shadow: 0 0 20px #ff5722; }
+}
+
+/* Botones toggle */
+#toggleTable, #toggleCharts {
+  font-weight: 500;
+}
+
+/* DataTable */
+.table-dark th, .table-dark td {
+  border-color: #444;
+}
+.slider-x { overflow-x: auto; }
+
+/* Charts */
+.chart-box {
+  background: #2a2a3d;
+  border-radius: 0.75rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+.chart-box:hover {
+  transform: scale(1.02);
+  transition: 0.3s;
+}
+
+/* Nav pills */
+.nav-pills .nav-link {
+  background: #2a2a3d;
+  color: #e0e0e0;
+  margin-right: 0.5rem;
+  font-size: 0.9rem;
+}
+.nav-pills .nav-link.active {
+  background: #0055aa;
+  color: #fff;
+}
