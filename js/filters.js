@@ -1,36 +1,20 @@
-// js/filters.js (versión corregida)
-
+// js/filters.js
 const csvUrl = "https://raw.githubusercontent.com/rudyluis/DashboardJS/refs/heads/main/global_cancer.csv";
 let dataAll = [];
 
 $(document).ready(() => {
-  // 1) Carga y parseo del CSV
   Papa.parse(csvUrl, {
-    download: true,
-    header: true,
-    skipEmptyLines: true,
-    dynamicTyping: true,
+    download: true, header: true, skipEmptyLines: true, dynamicTyping: true,
     complete: ({ data, errors }) => {
-      if (errors.length) {
-        console.error("Errores al parsear CSV:", errors);
-        return;
-      }
-      // Filtrar solo filas válidas
+      if (errors.length) return console.error(errors);
       dataAll = data.filter(r => r.Patient_ID);
-
-      // 2) Inicializar filtros con opciones únicas
       initFilters();
-
-      // 3) Primer render de tabla y gráficos
       applyFilters();
     },
-    error: err => console.error("Error al cargar CSV:", err)
+    error: err => console.error(err)
   });
 
-  // 4) Cuando cambie cualquiera de los selects, vuelvo a filtrar y renderizar
-  $("#filterRegion, #filterCancer, #filterYear").on("change", () => {
-    applyFilters();
-  });
+  $("#filterRegion, #filterCancer, #filterYear").on("change", applyFilters);
 });
 
 function initFilters() {
@@ -38,11 +22,8 @@ function initFilters() {
   const fC = $("#filterCancer").empty().append("<option value=''>Todos Tipos</option>");
   const fY = $("#filterYear").empty().append("<option value=''>Todos Años</option>");
 
-  // Sacar listas únicas
   const uniq = (arr, key) => [...new Set(arr.map(x => x[key]).filter(Boolean))].sort();
-
-  // Poblar selects
-  uniq(dataAll, "Country_Region").forEach(v => fR.append(`<option value="${v}">${v}</option>`));
-  uniq(dataAll, "Cancer_Type").   forEach(v => fC.append(`<option value="${v}">${v}</option>`));
-  uniq(dataAll, "Year").          forEach(v => fY.append(`<option value="${v}">${v}</option>`));
+  uniq(dataAll, "Country_Region").forEach(v => fR.append(`<option>${v}</option>`));
+  uniq(dataAll, "Cancer_Type").forEach(v => fC.append(`<option>${v}</option>`));
+  uniq(dataAll, "Year").forEach(v => fY.append(`<option>${v}</option>`));
 }
