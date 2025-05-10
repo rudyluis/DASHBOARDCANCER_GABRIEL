@@ -1,272 +1,262 @@
 // js/charts.js
 
-// Funciones auxiliares
-function logScale(v) {
-  return v > 0 ? Math.log10(v) : 0;
-}
-function avg(arr) {
-  return arr.length ? arr.reduce((sum, x) => sum + x, 0) / arr.length : 0;
-}
+// Registrar plugin boxplot (aunque esté eliminado)
+Chart.register(Chart.BoxPlotController, Chart.BoxAndWhiskers);
+
+function logScale(v) { return v > 0 ? Math.log10(v) : 0; }
+function avg(arr) { return arr.length ? arr.reduce((a,b)=>a+b,0)/arr.length : 0; }
 
 function renderCharts(data) {
-  // Destruye cualquier gráfico existente antes de crear nuevos
-  [
-    "barChart",
-    "doughnutChart",
-    "lineChart",
-    "scatterChart",
-    "radarChart",
-    "histChart",
-    "bubbleChart",
-    "boxChart"
-  ].forEach(id => Chart.getChart(id)?.destroy());
+  // 1) Destruye los charts previos
+  ["barChart","doughnutChart","lineChart","scatterChart","radarChart","histChart","bubbleChart"]
+    .forEach(id => Chart.getChart(id)?.destroy());
 
   //
-  // 1) BARRAS: Conteo de pacientes por tipo de cáncer
+  // 2) BARRAS: Tipo de Cáncer con colores eléctricos
   //
-  const countByType = data.reduce((obj, p) => {
-    obj[p.Cancer_Type] = (obj[p.Cancer_Type] || 0) + 1;
-    return obj;
-  }, {});
-
+  const byType = data.reduce((o,p)=>{
+    o[p.Cancer_Type]=(o[p.Cancer_Type]||0)+1; return o;
+  },{});
+  const types = Object.keys(byType);
+  const barColors = [
+    '#FF00FF','#00FFFF','#FFFF00','#FF4500',
+    '#00FF00','#1E90FF','#FFD700','#FF1493',
+    '#00CED1','#7CFC00'
+  ];
   new Chart(document.getElementById("barChart"), {
     type: "bar",
     data: {
-      labels: Object.keys(countByType),
+      labels: types,
       datasets: [{
         label: "Pacientes",
-        data: Object.values(countByType),
-        backgroundColor: Object.keys(countByType).map((_, i) => `hsl(${(i * 40) % 360}, 70%, 60%)`)
+        data: types.map(t => byType[t]),
+        // un color distinto por barra
+        backgroundColor: types.map((_,i)=>barColors[i % barColors.length]),
+        borderColor: '#FFFFFF',
+        borderWidth: 2
       }]
     },
     options: {
       responsive: true,
-      maintainAspectRatio: true,
+      maintainAspectRatio: false,
       scales: {
-        x: { title: { display: true, text: "Tipo de Cáncer" } },
-        y: { beginAtZero: true, title: { display: true, text: "Número de Pacientes" } }
+        x: {
+          ticks: { color: '#FFFFFF', font: { weight: 'bold' } },
+          grid: { display: false }
+        },
+        y: {
+          ticks: { color: '#FFFFFF', font: { weight: 'bold' } },
+          grid: { color: 'rgba(255,255,255,0.2)' }
+        }
       },
       plugins: {
+        legend: { labels: { color: '#FFFFFF', font: { size: 14 } } },
         tooltip: {
-          callbacks: {
-            label: ctx => `${ctx.label}: ${ctx.parsed.y}`
-          }
+          titleColor: '#000',
+          bodyColor: '#000',
+          backgroundColor: '#FFFFFF'
         }
       }
     }
   });
 
   //
-  // 2) DONUT: Proporción de etapas de cáncer
+  // 3) DONUT: Etapa Cáncer con neones intensos
   //
-  const countByStage = data.reduce((obj, p) => {
-    obj[p.Cancer_Stage] = (obj[p.Cancer_Stage] || 0) + 1;
-    return obj;
-  }, {});
-
+  const byStage = data.reduce((o,p)=>{
+    o[p.Cancer_Stage]=(o[p.Cancer_Stage]||0)+1; return o;
+  },{});
+  const stages = Object.keys(byStage);
+  const neonColors = ['#FF1493','#00FF7F','#7B68EE','#00BFFF','#FF8C00','#ADFF2F'];
   new Chart(document.getElementById("doughnutChart"), {
     type: "doughnut",
     data: {
-      labels: Object.keys(countByStage),
+      labels: stages,
       datasets: [{
-        data: Object.values(countByStage),
-        backgroundColor: Object.keys(countByStage).map((_, i) => `hsl(${(i * 60) % 360}, 50%, 50%)`)
+        data: stages.map(s=>byStage[s]),
+        backgroundColor: stages.map((_,i)=>neonColors[i % neonColors.length]),
+        hoverOffset: 12
       }]
     },
     options: {
       responsive: true,
-      maintainAspectRatio: true,
-      cutout: "60%",
+      maintainAspectRatio: false,
+      cutout: '60%',
       plugins: {
-        legend: { position: "right" },
-        tooltip: {
-          callbacks: {
-            label: ctx => `${ctx.label}: ${ctx.raw}`
-          }
+        legend: {
+          position: 'right',
+          labels: { color: '#FFFFFF', boxWidth: 16, padding: 12 }
+        },
+        tooltip: { 
+          titleColor: '#000', 
+          bodyColor: '#000', 
+          backgroundColor: '#FFFFFF' 
         }
       }
     }
   });
 
   //
-  // 3) LÍNEA: Supervivencia media por año
+  // 4) LÍNEA: Supervivencia media con neón azul
   //
-  const years = [...new Set(data.map(p => p.Year))].sort();
-  const survAvg = years.map(y =>
-    avg(data.filter(p => p.Year === y).map(p => p.Survival_Years))
-  );
-
+  const years = [...new Set(data.map(p=>p.Year))].sort();
+  const survAvg = years.map(y => avg(data.filter(p=>p.Year===y).map(p=>p.Survival_Years)));
   new Chart(document.getElementById("lineChart"), {
     type: "line",
     data: {
       labels: years,
       datasets: [{
-        label: "Supervivencia media (años)",
+        label: "Supervivencia media",
         data: survAvg,
-        borderColor: "#f9c74f",
-        backgroundColor: "rgba(249,199,79,0.2)",
-        tension: 0.3,
+        borderColor: '#00FFFF',
+        backgroundColor: 'rgba(0,255,255,0.4)',
+        tension: 0.4,
         fill: true,
-        pointRadius: 4
+        pointBackgroundColor: '#FFFFFF',
+        pointBorderColor: '#00FFFF',
+        pointRadius: 6
       }]
     },
     options: {
       responsive: true,
-      maintainAspectRatio: true,
+      maintainAspectRatio: false,
       scales: {
-        x: { title: { display: true, text: "Año" } },
-        y: { beginAtZero: true }
+        x: { ticks:{ color:'#FFFFFF' }, grid:{ color:'rgba(255,255,255,0.2)' } },
+        y: { ticks:{ color:'#FFFFFF' }, grid:{ color:'rgba(255,255,255,0.2)' } }
+      },
+      plugins: {
+        legend:{ labels:{ color:'#FFFFFF', font:{ size:14 } } }
       }
     }
   });
 
   //
-  // 4) DISPERSIÓN: Genetic_Risk vs Treatment_Cost_USD (log)
+  // 5) DISPERSIÓN: Riesgo vs Costo con neón verde/amarillo
   //
   new Chart(document.getElementById("scatterChart"), {
     type: "scatter",
     data: {
       datasets: [{
-        label: "Riesgo Genético vs Costo (log10 USD)",
-        data: data.map(p => ({
-          x: p.Genetic_Risk,
-          y: logScale(p.Treatment_Cost_USD)
-        })),
-        backgroundColor: "#90be6d"
+        label: "Risk vs Costo",
+        data: data.map(p=>({x:p.Genetic_Risk,y:logScale(p.Treatment_Cost_USD)})),
+        pointBackgroundColor: '#ADFF2F',
+        pointBorderColor: '#00FF00',
+        pointRadius: 8,
+        pointHoverRadius: 10
       }]
     },
     options: {
       responsive: true,
-      maintainAspectRatio: true,
+      maintainAspectRatio: false,
       scales: {
-        x: { title: { display: true, text: "Genetic Risk" } },
-        y: { title: { display: true, text: "Costo (log10 USD)" } }
+        x: { title:{ display:true,text:'Genetic Risk', color:'#FFFFFF' }, ticks:{ color:'#FFFFFF' }, grid:{ color:'rgba(255,255,255,0.2)' } },
+        y: { title:{ display:true,text:'Costo (log10)', color:'#FFFFFF' }, ticks:{ color:'#FFFFFF' }, grid:{ color:'rgba(255,255,255,0.2)' } }
+      },
+      plugins: {
+        legend:{ labels:{ color:'#FFFFFF' } }
       }
     }
   });
 
   //
-  // 5) RADAR: Air_Pollution vs Obesity_Level por región
+  // 6) RADAR: Aire vs Obesidad con púrpura y magenta
   //
-  const regionGroups = {};
-  data.forEach(p => {
-    if (!regionGroups[p.Country_Region]) {
-      regionGroups[p.Country_Region] = { air: [], obs: [] };
-    }
-    regionGroups[p.Country_Region].air.push(p.Air_Pollution);
-    regionGroups[p.Country_Region].obs.push(p.Obesity_Level);
+  const groups = {};
+  data.forEach(p=>{ 
+    (groups[p.Country_Region]=groups[p.Country_Region]||{air:[],obs:[]}).air.push(p.Air_Pollution);
+    groups[p.Country_Region].obs.push(p.Obesity_Level);
   });
-  const regions = Object.keys(regionGroups);
-
+  const regs = Object.keys(groups);
   new Chart(document.getElementById("radarChart"), {
     type: "radar",
     data: {
-      labels: regions,
-      datasets: [
-        {
-          label: "Aire (media)",
-          data: regions.map(r => avg(regionGroups[r].air)),
-          borderColor: "#f94144",
-          backgroundColor: "rgba(249,65,68,0.3)"
-        },
-        {
-          label: "Obesidad (media)",
-          data: regions.map(r => avg(regionGroups[r].obs)),
-          borderColor: "#577590",
-          backgroundColor: "rgba(87,117,144,0.3)"
-        }
-      ]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: true,
-      elements: { line: { borderWidth: 2 } }
-    }
-  });
-
-  //
-  // 6) HISTOGRAMA: Distribución de edades (bins de 10 años)
-  //
-  const ages = data.map(p => p.Age);
-  const maxAge = Math.ceil(Math.max(...ages) / 10) * 10;
-  const bins = Array.from({ length: maxAge / 10 }, (_, i) => i * 10);
-  const ageCounts = bins.map(start =>
-    ages.filter(a => a >= start && a < start + 10).length
-  );
-
-  new Chart(document.getElementById("histChart"), {
-    type: "bar",
-    data: {
-      labels: bins.map(b => `${b}-${b + 9}`),
+      labels: regs,
       datasets: [{
-        label: "Pacientes",
-        data: ageCounts,
-        backgroundColor: "#43aa8b"
+        label: "Aire (media)",
+        data: regs.map(r=>avg(groups[r].air)),
+        borderColor: '#DA70D6',
+        backgroundColor: 'rgba(218,112,214,0.4)'
+      },{
+        label: "Obesidad (media)",
+        data: regs.map(r=>avg(groups[r].obs)),
+        borderColor: '#FF00FF',
+        backgroundColor: 'rgba(255,0,255,0.4)'
       }]
     },
     options: {
       responsive: true,
-      maintainAspectRatio: true,
+      maintainAspectRatio: false,
       scales: {
-        x: { title: { display: true, text: "Rango de Edad" } },
-        y: { beginAtZero: true }
+        r: { 
+          angleLines: { color:'rgba(255,255,255,0.2)' },
+          grid: { color:'rgba(255,255,255,0.2)' },
+          pointLabels: { color:'#FFFFFF' },
+          ticks: { color:'#FFFFFF' }
+        }
+      },
+      plugins: {
+        legend:{ labels:{ color:'#FFFFFF' } }
       }
     }
   });
 
   //
-  // 7) BURBUJA: Alcohol_Use vs Smoking vs Target_Severity_Score
+  // 7) HISTOGRAMA: Edades con barras arcoíris
+  //
+  const agesArr = data.map(p=>p.Age);
+  const maxAge = Math.ceil(Math.max(...agesArr)/10)*10;
+  const bins = Array.from({length:maxAge/10},(_,i)=>i*10);
+  const ageCounts = bins.map(s=>agesArr.filter(a=>a>=s&&a<s+10).length);
+  const rainbow = ['#FF0000','#FF7F00','#FFFF00','#00FF00','#0000FF','#4B0082','#8F00FF','#FF1493'];
+  new Chart(document.getElementById("histChart"), {
+    type: "bar",
+    data: {
+      labels: bins.map(b=>`${b}-${b+9}`),
+      datasets: [{
+        label: "Pacientes",
+        data: ageCounts,
+        backgroundColor: bins.map((_,i)=>rainbow[i % rainbow.length]),
+        borderColor: '#FFFFFF',
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        x: { ticks:{ color:'#FFFFFF' }, grid:{ display:false } },
+        y: { ticks:{ color:'#FFFFFF' }, grid:{ color:'rgba(255,255,255,0.2)' } }
+      },
+      plugins: {
+        legend:{ labels:{ color:'#FFFFFF' } }
+      }
+    }
+  });
+
+  //
+  // 8) BURBUJA: Alcohol vs Fumar con neón rojo/rosa
   //
   new Chart(document.getElementById("bubbleChart"), {
     type: "bubble",
     data: {
       datasets: [{
-        label: "Alcohol vs Fumar vs Sev.Score",
-        data: data.map(p => ({
-          x: p.Alcohol_Use,
-          y: p.Smoking,
-          r: p.Target_Severity_Score * 2
-        })),
-        backgroundColor: "rgba(255,99,132,0.5)"
+        label: "Alcohol vs Fumar",
+        data: data.map(p=>({x:p.Alcohol_Use,y:p.Smoking,r:p.Target_Severity_Score*2})),
+        backgroundColor: 'rgba(255,20,147,0.6)',
+        borderColor: '#FF1493'
       }]
     },
     options: {
       responsive: true,
-      maintainAspectRatio: true,
+      maintainAspectRatio: false,
       scales: {
-        x: { title: { display: true, text: "Alcohol Use" } },
-        y: { title: { display: true, text: "Smoking" } }
-      }
-    }
-  });
-
-  //
-  // 8) BOX PLOT: Supervivencia por etapa de cáncer
-  //
-  const survivalByStage = data.reduce((obj, p) => {
-    (obj[p.Cancer_Stage] = obj[p.Cancer_Stage] || []).push(p.Survival_Years);
-    return obj;
-  }, {});
-
-  new Chart(document.getElementById("boxChart"), {
-    type: "boxplot",
-    data: {
-      labels: Object.keys(survivalByStage),
-      datasets: [{
-        label: "Supervivencia (años)",
-        data: Object.values(survivalByStage),
-        backgroundColor: "#f3722c"
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: true,
-      plugins: {
-        legend: { position: "bottom" }
+        x: { title:{ display:true,text:'Alcohol Use', color:'#FFFFFF' }, ticks:{ color:'#FFFFFF' }, grid:{ color:'rgba(255,255,255,0.2)' } },
+        y: { title:{ display:true,text:'Smoking', color:'#FFFFFF' }, ticks:{ color:'#FFFFFF' }, grid:{ color:'rgba(255,255,255,0.2)' } }
       },
-      scales: {
-        y: { title: { display: true, text: "Años de Supervivencia" } }
+      plugins: {
+        legend:{ labels:{ color:'#FFFFFF' } }
       }
     }
   });
+
 }
