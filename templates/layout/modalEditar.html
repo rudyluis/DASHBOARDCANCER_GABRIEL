@@ -1,0 +1,100 @@
+<!-- Modal Editar Paciente -->
+<div class="modal fade" id="modalEditar" tabindex="-1" aria-labelledby="modalEditarLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <form id="formEditar">
+        <div class="modal-header bg-warning text-dark">
+          <h5 class="modal-title" id="modalEditarLabel"><i class="fas fa-user-edit me-1"></i>Editar Paciente</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body row g-3">
+          <input type="hidden" id="editarId">
+
+          <!-- Patient_ID -->
+          <div class="col-md-6">
+            <label for="editarPatientId" class="form-label">Patient_ID</label>
+            <input type="text" id="editarPatientId" class="form-control" required>
+          </div>
+          <!-- Edad -->
+          <div class="col-md-6">
+            <label for="editarAge" class="form-label">Edad</label>
+            <input type="number" id="editarAge" class="form-control" min="0" required>
+          </div>
+          <!-- Género -->
+          <div class="col-md-4">
+            <label for="editarGender" class="form-label">Género</label>
+            <select id="editarGender" class="form-select" required>
+              <option value="">-- Seleccione --</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+            </select>
+          </div>
+          <!-- Región -->
+          <div class="col-md-4">
+            <label for="editarRegion" class="form-label">Región</label>
+            <input type="text" id="editarRegion" class="form-control" required>
+          </div>
+          <!-- Año -->
+          <div class="col-md-4">
+            <label for="editarYear" class="form-label">Año</label>
+            <input type="number" id="editarYear" class="form-control" min="1900" max="2100" required>
+          </div>
+          <!-- Genetic Risk -->
+          <div class="col-md-6">
+            <label for="editarGeneticRisk" class="form-label">Genetic Risk</label>
+            <input type="number" step="0.01" id="editarGeneticRisk" class="form-control" required>
+          </div>
+          <!-- Air Pollution -->
+          <div class="col-md-6">
+            <label for="editarAirPollution" class="form-label">Air Pollution</label>
+            <input type="number" step="0.01" id="editarAirPollution" class="form-control" required>
+          </div>
+          <!-- Alcohol Use -->
+          <div class="col-md-6">
+            <label for="editarAlcoholUse" class="form-label">Alcohol Use</label>
+            <input type="number" step="0.01" id="editarAlcoholUse" class="form-control" required>
+          </div>
+          <!-- Smoking -->
+          <div class="col-md-6">
+            <label for="editarSmoking" class="form-label">Smoking</label>
+            <input type="number" step="0.01" id="editarSmoking" class="form-control" required>
+          </div>
+          <!-- Obesity Level -->
+          <div class="col-md-6">
+            <label for="editarObesityLevel" class="form-label">Obesity Level</label>
+            <input type="number" step="0.01" id="editarObesityLevel" class="form-control" required>
+          </div>
+          <!-- Cancer Type -->
+          <div class="col-md-6">
+            <label for="editarCancerType" class="form-label">Tipo Cáncer</label>
+            <input type="text" id="editarCancerType" class="form-control" required>
+          </div>
+          <!-- Cancer Stage -->
+          <div class="col-md-6">
+            <label for="editarCancerStage" class="form-label">Etapa Cáncer</label>
+            <input type="text" id="editarCancerStage" class="form-control" required>
+          </div>
+          <!-- Treatment Cost USD -->
+          <div class="col-md-6">
+            <label for="editarTreatmentCost" class="form-label">Costo (USD)</label>
+            <input type="number" step="0.01" id="editarTreatmentCost" class="form-control" required>
+          </div>
+          <!-- Survival Years -->
+          <div class="col-md-6">
+            <label for="editarSurvivalYears" class="form-label">Supervivencia (años)</label>
+            <input type="number" step="0.01" id="editarSurvivalYears" class="form-control" required>
+          </div>
+          <!-- Severity Score -->
+          <div class="col-md-6">
+            <label for="editarSeverityScore" class="form-label">Severity Score</label>
+            <input type="number" step="0.01" id="editarSeverityScore" class="form-control" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-warning"><i class="fas fa-save me-1"></i>Guardar Cambios</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="fas fa-times-circle me-1"></i>Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,422 @@
+/* ==========================================================================
+   dashboard.css (versión refinada)
+   - Modo Oscuro: tonos rojizos/vinosos/cálidos
+   - Modo Claro: contrapartida cream + acento rojo
+   - Tabla más compacta (300px de alto)
+   ========================================================================== */
+
+/* ------------------------------
+   1) Variables generales
+   ------------------------------ */
+:root {
+  --vino-oscuro: #4c091f;
+  --vino-claro: #7b0d2b;
+  --acento-dorado: #d4af37;
+  --texto-claro: #f2ece4;
+  --fondo-oscuro: #2b1a1f;
+
+  --claro-bg: #fdf8f5;
+  --claro-titulo: #7b0d2b;
+  --claro-texto: #333333;
+  --acento-rosado: #c94f6d;
+
+  --transition-snappy: 0.25s ease-in-out;
+  --transition-smooth: 0.4s ease-in-out;
+}
+
+/* ------------------------------
+   2) Reset / global
+   ------------------------------ */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  font-family: 'Montserrat', sans-serif;
+  scroll-behavior: smooth;
+  transition: background-color var(--transition-smooth), color var(--transition-smooth);
+}
+
+/* ------------------------------
+   3) Modo Oscuro (por defecto)
+   ------------------------------ */
+[data-bs-theme="dark"] {
+  background-color: var(--fondo-oscuro);
+  color: var(--texto-claro);
+}
+
+/* Navbar y header */
+[data-bs-theme="dark"] .navbar,
+[data-bs-theme="dark"] .bg-primary {
+  background: var(--vino-oscuro) !important;
+}
+
+[data-bs-theme="dark"] .navbar-brand,
+[data-bs-theme="dark"] .navbar a,
+[data-bs-theme="dark"] .navbar button {
+  color: var(--texto-claro) !important;
+}
+
+/* Stat cards */
+[data-bs-theme="dark"] .stats-card {
+  background: #3a1e28;
+  color: var(--texto-claro);
+  border: 1px solid #531c29;
+  transition: transform var(--transition-snappy), background var(--transition-snappy);
+}
+
+[data-bs-theme="dark"] .stats-card:hover {
+  background: var(--vino-claro);
+  transform: translateY(-4px);
+}
+
+[data-bs-theme="dark"] .stats-card i {
+  color: var(--acento-dorado);
+}
+
+[data-bs-theme="dark"] .metric {
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+[data-bs-theme="dark"] .variation {
+  font-size: 0.9rem;
+  color: var(--acento-dorado);
+}
+
+/* Filtros */
+[data-bs-theme="dark"] .form-label {
+  color: var(--texto-claro) !important;
+}
+
+[data-bs-theme="dark"] .form-select {
+  background-color: #3a1e28 !important;
+  border: 1px solid #531c29 !important;
+  color: var(--texto-claro) !important;
+}
+
+[data-bs-theme="dark"] .form-select option {
+  background-color: #3a1e28;
+  color: var(--texto-claro);
+}
+
+/* Tabla de datos */
+[data-bs-theme="dark"] .table {
+  background-color: #3a1e28;
+  border-radius: 0.5rem;
+  color: var(--texto-claro);
+}
+
+[data-bs-theme="dark"] .table thead th {
+  background-color: #531c29;
+  color: var(--texto-claro);
+  border-bottom: 2px solid var(--vino-oscuro);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.85rem;
+}
+
+[data-bs-theme="dark"] .table tbody tr:nth-of-type(odd) {
+  background-color: rgba(76, 9, 31, 0.2);
+}
+
+[data-bs-theme="dark"] .table tbody tr:hover {
+  background-color: rgba(212, 175, 55, 0.1);
+}
+
+[data-bs-theme="dark"] .table td {
+  color: var(--texto-claro);
+  padding: 0.3rem 0.5rem;
+  font-size: 0.8rem;
+}
+
+/* Container que rodea a la tabla */
+[data-bs-theme="dark"] #tablaContainer {
+  border: 1px solid #531c29;
+  border-radius: 0.5rem;
+  background-color: #3a1e28;
+}
+
+/* Nav-pills (gráficos) */
+[data-bs-theme="dark"] .nav-pills .nav-link {
+  background: #3a1e28;
+  color: var(--texto-claro);
+  margin: 0.3rem;
+  border-radius: 0.5rem;
+  transition: background var(--transition-snappy);
+}
+
+[data-bs-theme="dark"] .nav-pills .nav-link:hover {
+  background: var(--vino-claro);
+  color: var(--texto-claro);
+}
+
+[data-bs-theme="dark"] .nav-pills .nav-link.active {
+  background: var(--acento-dorado);
+  color: var(--vino-oscuro);
+  font-weight: 600;
+}
+
+/* Botones outline en oscuro */
+[data-bs-theme="dark"] .btn-outline-light {
+  border-color: var(--texto-claro);
+  color: var(--texto-claro);
+  transition: background var(--transition-snappy), color var(--transition-snappy);
+}
+
+[data-bs-theme="dark"] .btn-outline-light:hover {
+  background-color: var(--acento-dorado);
+  color: var(--vino-oscuro);
+}
+
+/* Toggle Theme */
+[data-bs-theme="dark"] #toggleTheme {
+  border-color: var(--acento-dorado);
+  color: var(--texto-claro);
+}
+
+[data-bs-theme="dark"] #toggleTheme:hover {
+  background-color: var(--acento-dorado);
+  color: var(--vino-oscuro);
+}
+
+/* Select2 en oscuro */
+[data-bs-theme="dark"] .select2-container--default .select2-selection--single {
+  background-color: #3a1e28 !important;
+  border: 1px solid #531c29 !important;
+  color: var(--texto-claro) !important;
+}
+
+[data-bs-theme="dark"] .select2-container--default .select2-selection--single .select2-selection__rendered {
+  color: var(--texto-claro);
+}
+
+[data-bs-theme="dark"] .select2-container--default .select2-results__option {
+  background: #3a1e28;
+  color: var(--texto-claro);
+}
+
+[data-bs-theme="dark"] .select2-container--default .select2-results__option--highlighted[aria-selected] {
+  background-color: var(--vino-claro);
+  color: var(--texto-claro);
+}
+
+/* Gráficos en oscuro */
+[data-bs-theme="dark"] canvas {
+  background: #2b1a1f;
+  border-radius: 0.5rem;
+}
+
+/* ------------------------------
+   4) Modo Claro (+ diseño “crema + acento rosado”)
+   ------------------------------ */
+[data-bs-theme="light"] {
+  background-color: var(--claro-bg);
+  color: var(--claro-texto);
+}
+
+[data-bs-theme="light"] .navbar,
+[data-bs-theme="light"] .bg-primary {
+  background: var(--claro-titulo) !important;
+}
+
+[data-bs-theme="light"] .navbar-brand,
+[data-bs-theme="light"] .navbar a,
+[data-bs-theme="light"] .navbar button {
+  color: #ffffff !important;
+}
+
+/* Stat cards */
+[data-bs-theme="light"] .stats-card {
+  background: #ffffff;
+  color: var(--claro-texto);
+  border: 1px solid #e0e0e0;
+  transition: transform var(--transition-snappy), background var(--transition-snappy);
+}
+
+[data-bs-theme="light"] .stats-card:hover {
+  background: var(--acento-rosado);
+  transform: translateY(-4px);
+}
+
+[data-bs-theme="light"] .stats-card i {
+  color: var(--claro-texto);
+}
+
+[data-bs-theme="light"] .metric {
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+/* Filtros */
+[data-bs-theme="light"] .form-label {
+  color: var(--claro-texto) !important;
+}
+
+[data-bs-theme="light"] .form-select {
+  background-color: #ffffff !important;
+  border: 1px solid #e0e0e0 !important;
+  color: var(--claro-texto) !important;
+}
+
+[data-bs-theme="light"] .form-select option {
+  background-color: #ffffff;
+  color: var(--claro-texto);
+}
+
+/* Tabla de datos */
+[data-bs-theme="light"] .table {
+  background-color: #ffffff;
+  border-radius: 0.5rem;
+  color: var(--claro-texto);
+}
+
+[data-bs-theme="light"] .table thead th {
+  background-color: var(--acento-rosado);
+  color: #ffffff;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.85rem;
+}
+
+[data-bs-theme="light"] .table tbody tr:nth-of-type(odd) {
+  background-color: rgba(201, 79, 109, 0.1);
+}
+
+[data-bs-theme="light"] .table tbody tr:hover {
+  background-color: rgba(201, 79, 109, 0.2);
+}
+
+[data-bs-theme="light"] .table td {
+  color: var(--claro-texto);
+  padding: 0.3rem 0.5rem;
+  font-size: 0.8rem;
+}
+
+/* Container que rodea a la tabla */
+[data-bs-theme="light"] #tablaContainer {
+  border: 1px solid #e0e0e0;
+  border-radius: 0.5rem;
+  background-color: #ffffff;
+}
+
+/* Nav-pills (gráficos) */
+[data-bs-theme="light"] .nav-pills .nav-link {
+  background: #f5f5f5;
+  color: var(--claro-texto);
+  margin: 0.3rem;
+  border-radius: 0.5rem;
+  transition: background var(--transition-snappy);
+}
+
+[data-bs-theme="light"] .nav-pills .nav-link:hover {
+  background: var(--acento-rosado);
+  color: #ffffff;
+}
+
+[data-bs-theme="light"] .nav-pills .nav-link.active {
+  background: var(--claro-titulo);
+  color: #ffffff;
+  font-weight: 600;
+}
+
+[data-bs-theme="light"] .btn-outline-dark {
+  border-color: var(--claro-texto);
+  color: var(--claro-texto);
+  transition: background var(--transition-snappy), color var(--transition-snappy);
+}
+
+[data-bs-theme="light"] .btn-outline-dark:hover {
+  background-color: var(--acento-rosado);
+  color: #ffffff;
+}
+
+/* Toggle Theme */
+[data-bs-theme="light"] #toggleTheme {
+  border-color: var(--claro-texto);
+  color: var(--claro-texto);
+}
+
+[data-bs-theme="light"] #toggleTheme:hover {
+  background-color: var(--acento-rosado);
+  color: #ffffff;
+}
+
+/* Select2 en claro */
+[data-bs-theme="light"] .select2-container--default .select2-selection--single {
+  background-color: #ffffff !important;
+  border: 1px solid #e0e0e0 !important;
+  color: var(--claro-texto) !important;
+}
+
+[data-bs-theme="light"] .select2-container--default .select2-selection--single .select2-selection__rendered {
+  color: var(--claro-texto);
+}
+
+[data-bs-theme="light"] .select2-container--default .select2-results__option {
+  background: #ffffff;
+  color: var(--claro-texto);
+}
+
+[data-bs-theme="light"] .select2-container--default .select2-results__option--highlighted[aria-selected] {
+  background-color: var(--acento-rosado);
+  color: #ffffff;
+}
+
+/* Gráficos en claro */
+[data-bs-theme="light"] canvas {
+  background: #fdf8f5;
+  border-radius: 0.5rem;
+}
+
+/* ------------------------------
+   5) Ajustes comunes
+   ------------------------------ */
+/* Limitar altura de la tabla de pacientes a 300px (más compacta) */
+#tablaContainer {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+/* Ajustar altura de los canvases (gráficos) */
+.chart-box {
+  width: 100%;
+  height: 300px !important;
+}
+
+/* Transiciones suaves en los stat cards */
+.stats-card {
+  transition: transform var(--transition-snappy), background var(--transition-snappy);
+}
+
+/* Barras de scroll personalizadas */
+#tablaContainer::-webkit-scrollbar {
+  width: 8px;
+}
+#tablaContainer::-webkit-scrollbar-thumb {
+  background-color: rgba(201, 79, 109, 0.7);
+  border-radius: 4px;
+}
+#tablaContainer::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+/* Ajuste tipográfico */
+.form-label {
+  font-weight: 500;
+}
+
+/* Botones de filtro (detalles summary) */
+details > summary {
+  cursor: pointer;
+  font-size: 1.1rem;
+  color: var(--acento-dorado);
+  outline: none;
+  transition: color var(--transition-snappy);
+}
+details > summary:hover {
+  color: var(--vino-claro);
+}

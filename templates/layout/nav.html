@@ -1,0 +1,27 @@
+<nav id="mainNavbar" class="navbar navbar-expand-lg navbar-dark bg-dark mb-4 shadow-sm">
+  <div class="container-fluid justify-content-between">
+    <!-- Marca del Dashboard -->
+    <h1 class="navbar-brand mb-0 h3">
+      <i class="fas fa-database me-2"></i>Dashboard de Cáncer
+    </h1>
+    <div class="d-flex align-items-center">
+      <!-- Buscador por Patient_ID -->
+      <input type="text" id="searchPatientId" class="form-control me-2" placeholder="Buscar Patient_ID..."
+             style="max-width: 200px;">
+      <!-- Toggle tema oscuro/claro -->
+      <button id="toggleTheme" class="btn btn-outline-light">Modo Oscuro 🌙</button>
+      <!-- Botón a la vista principal del Dashboard -->
+      <a href="{{ url_for('dashboard') }}" class="btn btn-outline-primary btn-sm ms-2">
+        <i class="fas fa-chart-pie me-1"></i>Inicio
+      </a>
+      <!-- Botón a la vista CRUD de pacientes -->
+      <a href="{{ url_for('listcancer') }}" class="btn btn-outline-success btn-sm ms-2">
+        <i class="fas fa-notes-medical me-1"></i>Pacientes
+      </a>
+      <!-- Botón de Logout -->
+      <a href="{{ url_for('logout') }}" class="btn btn-outline-danger btn-sm ms-2">
+        <i class="fas fa-power-off me-1"></i>Salir
+      </a>
+    </div>
+  </div>
+</nav>

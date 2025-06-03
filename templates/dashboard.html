@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="es" data-bs-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Dashboard Cáncer</title>
+
+  <!-- Bootstrap CSS -->
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  />
+  <!-- DataTables CSS -->
+  <link
+    href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css"
+    rel="stylesheet"
+  />
+  <!-- Select2 CSS -->
+  <link
+    href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css"
+    rel="stylesheet"
+  />
+  <!-- Fuentes -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap"
+    rel="stylesheet"
+  />
+
+  <!-- Tu CSS personalizado -->
+  <link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='css/dashboard.css') }}?v=3.0"
+  />
+</head>
+<body>
+  <!-- Navegación superior -->
+  <nav
+    id="mainNavbar"
+    class="navbar navbar-expand-lg navbar-dark bg-dark mb-4 shadow-sm"
+  >
+    <div class="container-fluid justify-content-between">
+      <h1 class="navbar-brand mb-0 h3">
+        <i class="fas fa-notes-medical me-2"></i>Dashboard Cáncer
+      </h1>
+      <div class="d-flex align-items-center">
+        <!-- Buscador por Patient_ID -->
+        <input
+          type="text"
+          id="searchPatientId"
+          class="form-control form-control-sm me-2"
+          placeholder="🔍 Buscar Patient_ID..."
+          style="max-width: 180px;"
+        />
+        <!-- Botón modo claro/oscuro -->
+        <button id="toggleTheme" class="btn btn-outline-light btn-sm me-2">
+          Modo Claro 🌞
+        </button>
+        <!-- Logout -->
+        <a href="{{ url_for('logout') }}" class="btn btn-outline-danger btn-sm">
+          <i class="fas fa-power-off me-1"></i>Salir
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container-fluid">
+    <!-- 1) Stat Cards de indicadores generales -->
+    <div class="row mb-4">
+      <div class="col-md-3">
+        <div class="stats-card d-flex align-items-center p-3">
+          <i class="fas fa-hospital-user fa-2x me-3"></i>
+          <div>
+            <div class="metric" id="totalPacientes">0</div>
+            <small class="variation">Total Pacientes</small>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="stats-card d-flex align-items-center p-3">
+          <i class="fas fa-diagnoses fa-2x me-3"></i>
+          <div>
+            <div class="metric" id="tipoComun">N/A</div>
+            <small class="variation">Tipo Más Común</small>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="stats-card d-flex align-items-center p-3">
+          <i class="fas fa-globe-americas fa-2x me-3"></i>
+          <div>
+            <div class="metric" id="regionTop">N/A</div>
+            <small class="variation">Región Top</small>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="stats-card d-flex align-items-center p-3">
+          <i class="fas fa-calendar-check fa-2x me-3"></i>
+          <div>
+            <div class="metric" id="topYear">N/A</div>
+            <small class="variation">Año con Máx Supervivencia</small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2) Filtros: Región, Tipo Cáncer, Año -->
+    <div class="row mb-3">
+      <div class="col-md-4 mb-2">
+        <label class="form-label">Región</label>
+        <select id="filterRegion" class="form-select form-select-sm">
+          <!-- Opciones cargadas dinámicamente -->
+        </select>
+      </div>
+      <div class="col-md-4 mb-2">
+        <label class="form-label">Tipo de Cáncer</label>
+        <select id="filterCancerType" class="form-select form-select-sm">
+          <!-- Opciones cargadas dinámicamente -->
+        </select>
+      </div>
+      <div class="col-md-4 mb-2">
+        <label class="form-label">Año</label>
+        <select id="filterYear" class="form-select form-select-sm">
+          <!-- Opciones cargadas dinámicamente -->
+        </select>
+      </div>
+    </div>
+
+    <!-- 3) Botones mostrar/ocultar tabla y gráficos -->
+    <div class="d-grid gap-2 mb-3">
+      <button id="toggleTable" class="btn btn-outline-light btn-sm">
+        Ocultar Tabla de Datos
+      </button>
+    </div>
+    <h2 id="tableTitle" class="text-center text-danger fw-bold mb-3">
+      Datos de Pacientes
+    </h2>
+
+    <!-- 4) Tabla de datos -->
+    <div id="tablaContainer" class="card mb-4 shadow-sm">
+      <div class="card-body p-2">
+        <div class="table-responsive">
+          <table
+            id="tablaCancer"
+            class="table table-striped table-dark table-sm mb-0"
+            style="width:100%"
+          >
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Patient_ID</th>
+                <th>Edad</th>
+                <th>Género</th>
+                <th>Región</th>
+                <th>Año</th>
+                <th>Genético</th>
+                <th>Aire</th>
+                <th>Alcohol</th>
+                <th>Fumar</th>
+                <th>Obesidad</th>
+                <th>Tipo Cáncer</th>
+                <th>Etapa</th>
+                <th>Costo USD</th>
+                <th>Supervivencia</th>
+                <th>Severity Score</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5) Mostrar/ocultar sección de gráficos -->
+    <div class="d-grid gap-2 mb-3">
+      <button id="toggleCharts" class="btn btn-outline-light btn-sm">
+        Ver Gráficos Representativos
+      </button>
+    </div>
+    <h2 id="chartsTitle" class="text-center text-danger fw-bold mb-3 d-none">
+      Visualización Gráfica
+    </h2>
+
+    <!-- 6) Sección de gráficos -->
+    <div id="sectionCharts" class="d-none">
+      <ul class="nav nav-pills mb-3 flex-wrap" id="tabsGraficas">
+        <li class="nav-item">
+          <button
+            class="nav-link active"
+            data-bs-toggle="pill"
+            data-bs-target="#barTab"
+          >
+            Tipo Cáncer
+          </button>
+        </li>
+        <li class="nav-item">
+          <button
+            class="nav-link"
+            data-bs-toggle="pill"
+            data-bs-target="#doughnutTab"
+          >
+            Etapa Cáncer
+          </button>
+        </li>
+        <li class="nav-item">
+          <button
+            class="nav-link"
+            data-bs-toggle="pill"
+            data-bs-target="#lineTab"
+          >
+            Superv.×Año
+          </button>
+        </li>
+        <li class="nav-item">
+          <button
+            class="nav-link"
+            data-bs-toggle="pill"
+            data-bs-target="#scatterTab"
+          >
+            Riesgo vs Costo
+          </button>
+        </li>
+        <li class="nav-item">
+          <button
+            class="nav-link"
+            data-bs-toggle="pill"
+            data-bs-target="#radarTab"
+          >
+            Aire vs Obesidad
+          </button>
+        </li>
+        <li class="nav-item">
+          <button
+            class="nav-link"
+            data-bs-toggle="pill"
+            data-bs-target="#histTab"
+          >
+            Edades
+          </button>
+        </li>
+        <li class="nav-item">
+          <button
+            class="nav-link"
+            data-bs-toggle="pill"
+            data-bs-target="#bubbleTab"
+          >
+            Alcohol vs Fumar
+          </button>
+        </li>
+        <li class="nav-item">
+          <button
+            class="nav-link"
+            data-bs-toggle="pill"
+            data-bs-target="#pieGeneroTab"
+          >
+            Género
+          </button>
+        </li>
+        <li class="nav-item">
+          <button
+            class="nav-link"
+            data-bs-toggle="pill"
+            data-bs-target="#barYearTab"
+          >
+            Pacientes×Año
+          </button>
+        </li>
+      </ul>
+
+      <div class="tab-content">
+        <!-- Tipo Cáncer (Bar) -->
+        <div class="tab-pane fade show active" id="barTab">
+          <canvas id="barChart" class="chart-box"></canvas>
+        </div>
+        <!-- Etapa Cáncer (Doughnut) -->
+        <div class="tab-pane fade" id="doughnutTab">
+          <canvas id="doughnutChart" class="chart-box"></canvas>
+        </div>
+        <!-- Supervivencia×Año (Line) -->
+        <div class="tab-pane fade" id="lineTab">
+          <canvas id="lineChart" class="chart-box"></canvas>
+        </div>
+        <!-- Riesgo vs Costo (Scatter) -->
+        <div class="tab-pane fade" id="scatterTab">
+          <canvas id="scatterChart" class="chart-box"></canvas>
+        </div>
+        <!-- Aire vs Obesidad (Radar) -->
+        <div class="tab-pane fade" id="radarTab">
+          <canvas id="radarChart" class="chart-box"></canvas>
+        </div>
+        <!-- Edades (Histograma) -->
+        <div class="tab-pane fade" id="histTab">
+          <canvas id="histChart" class="chart-box"></canvas>
+        </div>
+        <!-- Alcohol vs Fumar (Bubble) -->
+        <div class="tab-pane fade" id="bubbleTab">
+          <canvas id="bubbleChart" class="chart-box"></canvas>
+        </div>
+        <!-- Género (Pie) -->
+        <div class="tab-pane fade" id="pieGeneroTab">
+          <canvas id="pieGenero" class="chart-box"></canvas>
+        </div>
+        <!-- Pacientes×Año (Bar) -->
+        <div class="tab-pane fade" id="barYearTab">
+          <canvas id="barYear" class="chart-box"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pie de página -->
+  <footer class="footer mt-4">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-md-12">
+          <p class="text-center text-white">
+            <small>Bienvenido {{ username }} – Creado para Univalle – 2025</small>
+          </p>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Modales de Agregar / Editar (incluye campos con IDs que espera el JS) -->
+  {% include 'layout/modalAgregar.html' %}
+  {% include 'layout/modalEditar.html' %}
+
+  <!-- Mensajes y Loader -->
+  {% include 'layout/mensajes.html' %}
+
+  <!-- Scripts básicos -->
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+  <!-- Tu JavaScript: primero dashboard.js, luego crudcancer.js -->
+  <script src="{{ url_for('static', filename='js/dashboard.js') }}?v=3.0"></script>
+  <script src="{{ url_for('static', filename='js/crudcancer.js') }}?v=2.0"></script>
+</body>
+</html>

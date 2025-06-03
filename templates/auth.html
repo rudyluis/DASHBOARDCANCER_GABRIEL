@@ -1,0 +1,351 @@
+{% extends 'base.html' %}
+
+{% block title %}Iniciar Sesión / Registrarse{% endblock %}
+
+{% block extra_css %}
+  <!-- Animate.css para animaciones -->
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
+  />
+
+  <style>
+    /* ----------------------------------------
+       1) Estilos globales para Auth Page
+       ---------------------------------------- */
+    body {
+      overflow: hidden;
+    }
+    .auth-page {
+      position: relative;
+      min-height: 100vh;
+      background: url('https://media.tenor.com/09TPphdwuQAAAAAC/red-blood-cells-national-geographic.gif')
+        center center / cover no-repeat;
+      color: #f2ece4;
+    }
+
+    /* Capa semitransparente sobre el GIF para oscurecerlo un poco */
+    .overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(44, 10, 21, 0.7);
+      z-index: 1;
+    }
+
+    /* ----------------------------------------
+       2) Tarjeta de Login/Registro
+       ---------------------------------------- */
+    .login-card {
+      position: relative;
+      z-index: 2;
+      max-width: 420px;
+      margin: auto;
+      top: 50%;
+      transform: translateY(-50%);
+      background: linear-gradient(
+        135deg,
+        rgba(139, 17, 50, 0.95) 0%,
+        rgba(92, 10, 34, 0.95) 100%
+      );
+      border-radius: 1rem;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+      overflow: hidden;
+      animation: animate__animated animate__zoomIn 1s;
+    }
+
+    .login-card-header {
+      padding: 1.5rem;
+      text-align: center;
+      background: rgba(0, 0, 0, 0.25);
+    }
+
+    .login-card-header h5 {
+      color: #f2ece4;
+      font-size: 1.75rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      margin-bottom: 0;
+    }
+
+    .login-card-body {
+      background: #ffffff;
+      padding: 2rem;
+      border-top-left-radius: 1rem;
+      border-top-right-radius: 1rem;
+      color: #5c0a22;
+    }
+
+    .login-card-body label {
+      font-weight: 600;
+      color: #5c0a22;
+    }
+
+    .login-card-body .form-control {
+      border: 2px solid #e0e0e0;
+      border-radius: 0.5rem;
+      padding: 0.75rem 1rem;
+      transition: border-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+    }
+
+    .login-card-body .form-control:focus {
+      border-color: #8b1132;
+      box-shadow: 0 0 6px rgba(139, 17, 50, 0.5);
+      background-color: #fff8f8;
+    }
+
+    /* Estilo personalizado para pestañas (nav-tabs) */
+    .nav-tabs {
+      border-bottom: 2px solid #e0e0e0;
+      margin-bottom: 1.5rem;
+    }
+
+    .nav-tabs .nav-link {
+      color: #5c0a22;
+      font-weight: 600;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      transition: color 0.3s;
+    }
+
+    .nav-tabs .nav-link:hover {
+      color: #8b1132;
+    }
+
+    .nav-tabs .nav-link.active {
+      background-color: #8b1132;
+      color: #ffffff;
+      border-radius: 0.5rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Botones principales */
+    .btn-custom-primary {
+      background: linear-gradient(45deg, #d4af37, #8b1132);
+      border: none;
+      color: #ffffff;
+      border-radius: 0.5rem;
+      padding: 0.75rem;
+      font-size: 1rem;
+      font-weight: 600;
+      transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+    }
+
+    .btn-custom-primary:hover {
+      opacity: 0.9;
+      transform: translateY(-2px);
+    }
+
+    .btn-custom-success {
+      background: linear-gradient(45deg, #ff7f50, #c94f6d);
+      border: none;
+      color: #ffffff;
+      border-radius: 0.5rem;
+      padding: 0.75rem;
+      font-size: 1rem;
+      font-weight: 600;
+      transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+    }
+
+    .btn-custom-success:hover {
+      opacity: 0.9;
+      transform: translateY(-2px);
+    }
+
+    /* Pequeño “glow” en inputs y botones */
+    .form-control,
+    .btn-custom-primary,
+    .btn-custom-success {
+      box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+    }
+
+    /* ----------------------------------------
+       3) Footer de Auth
+       ---------------------------------------- */
+    .login-footer {
+      margin-top: 1rem;
+      text-align: center;
+      color: #f2ece4;
+      font-size: 0.9rem;
+      animation: animate__animated animate__fadeInUp 1s 0.5s both;
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+<main class="auth-page">
+  <!-- Capa semitransparente para atenuar el GIF -->
+  <div class="overlay"></div>
+
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-12 col-md-8 col-lg-6">
+        <!-- Tarjeta central -->
+        <div class="card login-card">
+          <!-- Header de la tarjeta -->
+          <div class="card-header login-card-header animate__animated animate__fadeInDown">
+            <h5>🔬 Iniciar Sesión / Registrarse</h5>
+          </div>
+
+          <!-- Cuerpo de la tarjeta (formulario) -->
+          <div class="card-body login-card-body animate__animated animate__fadeInUp animate__delay-1s">
+            <!-- Mensajes Flash: Solo se muestran si hay mensajes en el contexto -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+              {% if messages %}
+                {% for category, message in messages %}
+                  <div
+                    class="alert alert-{{ category }} alert-dismissible fade show animate__animated animate__fadeIn"
+                    role="alert"
+                  >
+                    {{ message }}
+                    <button
+                      type="button"
+                      class="btn-close"
+                      data-bs-dismiss="alert"
+                      aria-label="Cerrar"
+                    ></button>
+                  </div>
+                {% endfor %}
+              {% endif %}
+            {% endwith %}
+
+            <!-- Nav Tabs -->
+            <ul
+              class="nav nav-tabs nav-fill mb-4"
+              id="authTab"
+              role="tablist"
+            >
+              <li class="nav-item" role="presentation">
+                <button
+                  class="nav-link active animate__animated animate__zoomIn"
+                  id="login-tab"
+                  data-bs-toggle="tab"
+                  data-bs-target="#login"
+                  type="button"
+                  role="tab"
+                >
+                  🔐 Iniciar sesión
+                </button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button
+                  class="nav-link animate__animated animate__zoomIn animate__delay-1s"
+                  id="register-tab"
+                  data-bs-toggle="tab"
+                  data-bs-target="#register"
+                  type="button"
+                  role="tab"
+                >
+                  ✍️ Registrarse
+                </button>
+              </li>
+            </ul>
+
+            <div class="tab-content" id="authTabContent">
+              <!-- Login Form -->
+              <div
+                class="tab-pane fade show active"
+                id="login"
+                role="tabpanel"
+              >
+                <form method="POST" action="{{ url_for('auth') }}">
+                  <input type="hidden" name="action" value="login" />
+
+                  <div class="mb-3">
+                    <label for="loginUsername" class="form-label"
+                      >Usuario</label
+                    >
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="loginUsername"
+                      name="username"
+                      placeholder="🔑 Usuario"
+                      required
+                    />
+                  </div>
+                  <div class="mb-4">
+                    <label for="loginPassword" class="form-label"
+                      >Contraseña</label
+                    >
+                    <input
+                      type="password"
+                      class="form-control"
+                      id="loginPassword"
+                      name="password"
+                      placeholder="🔒 Contraseña"
+                      required
+                    />
+                  </div>
+                  <div class="d-grid">
+                    <button
+                      type="submit"
+                      class="btn btn-custom-primary"
+                    >
+                      Ingresar 🚀
+                    </button>
+                  </div>
+                </form>
+              </div>
+
+              <!-- Register Form -->
+              <div class="tab-pane fade" id="register" role="tabpanel">
+                <form method="POST" action="{{ url_for('auth') }}">
+                  <input type="hidden" name="action" value="register" />
+
+                  <div class="mb-3">
+                    <label for="regUsername" class="form-label"
+                      >Usuario</label
+                    >
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="regUsername"
+                      name="username"
+                      placeholder="📝 Nuevo Usuario"
+                      required
+                    />
+                  </div>
+                  <div class="mb-4">
+                    <label for="regPassword" class="form-label"
+                      >Contraseña</label
+                    >
+                    <input
+                      type="password"
+                      class="form-control"
+                      id="regPassword"
+                      name="password"
+                      placeholder="🔐 Nueva Contraseña"
+                      required
+                    />
+                  </div>
+                  <div class="d-grid">
+                    <button
+                      type="submit"
+                      class="btn btn-custom-success"
+                    >
+                      Registrarme 🎉
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+            <!-- Fin Tab Content -->
+          </div>
+          <!-- Fin Body de Tarjeta -->
+        </div>
+        <!-- Fin Card de Login -->
+
+        <!-- Footer pequeño -->
+        <div
+          class="login-footer animate__animated animate__fadeInUp animate__delay-2s"
+        >
+          <small>🔬 Creado para Univalle – 2025</small>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+{% endblock %}

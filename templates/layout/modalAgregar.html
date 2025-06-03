@@ -1,0 +1,105 @@
+<!-- Botón Agregar Paciente -->
+<div class="mb-3">
+  <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalAgregar">
+    <i class="fas fa-plus-circle me-1"></i> Agregar Paciente
+  </button>
+</div>
+
+<!-- Modal Agregar Paciente -->
+<div class="modal fade" id="modalAgregar" tabindex="-1" aria-labelledby="modalAgregarLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <form id="formAgregar">
+        <div class="modal-header bg-success text-white">
+          <h5 class="modal-title" id="modalAgregarLabel"><i class="fas fa-user-plus me-1"></i>Nuevo Paciente</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body row g-3">
+          <!-- Patient_ID -->
+          <div class="col-md-6">
+            <label for="addPatientId" class="form-label">Patient_ID</label>
+            <input type="text" id="addPatientId" class="form-control" required>
+          </div>
+          <!-- Edad -->
+          <div class="col-md-6">
+            <label for="addAge" class="form-label">Edad</label>
+            <input type="number" id="addAge" class="form-control" min="0" required>
+          </div>
+          <!-- Género -->
+          <div class="col-md-4">
+            <label for="addGender" class="form-label">Género</label>
+            <select id="addGender" class="form-select" required>
+              <option value="">-- Seleccione --</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+            </select>
+          </div>
+          <!-- Región -->
+          <div class="col-md-4">
+            <label for="addRegion" class="form-label">Región</label>
+            <input type="text" id="addRegion" class="form-control" required>
+          </div>
+          <!-- Año -->
+          <div class="col-md-4">
+            <label for="addYear" class="form-label">Año</label>
+            <input type="number" id="addYear" class="form-control" min="1900" max="2100" required>
+          </div>
+          <!-- Genetic Risk -->
+          <div class="col-md-6">
+            <label for="addGeneticRisk" class="form-label">Genetic Risk</label>
+            <input type="number" step="0.01" id="addGeneticRisk" class="form-control" required>
+          </div>
+          <!-- Air Pollution -->
+          <div class="col-md-6">
+            <label for="addAirPollution" class="form-label">Air Pollution</label>
+            <input type="number" step="0.01" id="addAirPollution" class="form-control" required>
+          </div>
+          <!-- Alcohol Use -->
+          <div class="col-md-6">
+            <label for="addAlcoholUse" class="form-label">Alcohol Use</label>
+            <input type="number" step="0.01" id="addAlcoholUse" class="form-control" required>
+          </div>
+          <!-- Smoking -->
+          <div class="col-md-6">
+            <label for="addSmoking" class="form-label">Smoking</label>
+            <input type="number" step="0.01" id="addSmoking" class="form-control" required>
+          </div>
+          <!-- Obesity Level -->
+          <div class="col-md-6">
+            <label for="addObesityLevel" class="form-label">Obesity Level</label>
+            <input type="number" step="0.01" id="addObesityLevel" class="form-control" required>
+          </div>
+          <!-- Cancer Type -->
+          <div class="col-md-6">
+            <label for="addCancerType" class="form-label">Tipo Cáncer</label>
+            <input type="text" id="addCancerType" class="form-control" required>
+          </div>
+          <!-- Cancer Stage -->
+          <div class="col-md-6">
+            <label for="addCancerStage" class="form-label">Etapa Cáncer</label>
+            <input type="text" id="addCancerStage" class="form-control" required>
+          </div>
+          <!-- Treatment Cost USD -->
+          <div class="col-md-6">
+            <label for="addTreatmentCost" class="form-label">Costo (USD)</label>
+            <input type="number" step="0.01" id="addTreatmentCost" class="form-control" required>
+          </div>
+          <!-- Survival Years -->
+          <div class="col-md-6">
+            <label for="addSurvivalYears" class="form-label">Supervivencia (años)</label>
+            <input type="number" step="0.01" id="addSurvivalYears" class="form-control" required>
+          </div>
+          <!-- Severity Score -->
+          <div class="col-md-6">
+            <label for="addSeverityScore" class="form-label">Severity Score</label>
+            <input type="number" step="0.01" id="addSeverityScore" class="form-control" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-success"><i class="fas fa-save me-1"></i>Guardar</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="fas fa-times-circle me-1"></i>Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

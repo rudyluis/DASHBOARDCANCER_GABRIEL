@@ -1,0 +1,75 @@
+{% raw %}
+<!-- templates/layout/header_dashboard.html -->
+
+<!-- NAVBAR -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
+  <div class="container-fluid">
+    <!-- Marca / Título -->
+    <a class="navbar-brand" href="#">
+      <i class="fas fa-notes-medical me-2"></i>Dashboard Cáncer
+    </a>
+
+    <!-- Botones a la derecha: búsqueda + toggle theme + logout -->
+    <div class="d-flex align-items-center">
+      <!-- Input de búsqueda por Patient_ID -->
+      <input
+        type="text"
+        id="searchPatientId"
+        class="form-control form-control-sm me-2"
+        placeholder="Buscar Patient ID..."
+        style="max-width: 200px;"
+      />
+
+      <!-- Botón Toggle Oscuro/Claro -->
+      <button id="toggleTheme" class="btn btn-outline-light btn-sm me-2">
+        Modo Oscuro 🌙
+      </button>
+
+      <!-- Botón de Logout -->
+      <a href="{{ url_for('logout') }}" class="btn btn-outline-danger btn-sm">
+        <i class="fas fa-power-off"></i>
+      </a>
+    </div>
+  </div>
+</nav>
+
+<!-- ROW DE STAT CARDS -->
+<div class="row mb-4 px-2">
+  <div class="col-12 col-md-3 mb-3">
+    <div class="stats-card bg-white text-dark p-3 rounded d-flex align-items-center shadow-sm">
+      <i class="fas fa-users fa-2x text-primary me-3"></i>
+      <div>
+        <div class="metric fs-4 fw-bold" id="totalPacientes">0</div>
+        <small class="text-muted">Total Pacientes</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-12 col-md-3 mb-3">
+    <div class="stats-card bg-white text-dark p-3 rounded d-flex align-items-center shadow-sm">
+      <i class="fas fa-vial fa-2x text-primary me-3"></i>
+      <div>
+        <div class="metric fs-4 fw-bold" id="tipoComun">N/A</div>
+        <small class="text-muted">Tipo más Común</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-12 col-md-3 mb-3">
+    <div class="stats-card bg-white text-dark p-3 rounded d-flex align-items-center shadow-sm">
+      <i class="fas fa-globe fa-2x text-primary me-3"></i>
+      <div>
+        <div class="metric fs-4 fw-bold" id="regionTop">N/A</div>
+        <small class="text-muted">Región Top</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-12 col-md-3 mb-3">
+    <div class="stats-card bg-white text-dark p-3 rounded d-flex align-items-center shadow-sm">
+      <i class="fas fa-calendar-alt fa-2x text-primary me-3"></i>
+      <div>
+        <div class="metric fs-4 fw-bold" id="topYear">N/A</div>
+        <small class="text-muted">Año con Mayor Supervivencia</small>
+      </div>
+    </div>
+  </div>
+</div>
+{% endraw %}
