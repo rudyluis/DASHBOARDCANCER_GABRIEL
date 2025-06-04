@@ -9,7 +9,6 @@ Base = declarative_base()
 
 class CancerPatient(Base):
     __tablename__ = 'cancer_patients'
-
     id = Column(Integer, primary_key=True, autoincrement=True)
     patient_id = Column(String(20), unique=True, nullable=False)
     age = Column(Integer, nullable=False)
@@ -29,27 +28,27 @@ class CancerPatient(Base):
 
     def __repr__(self):
         return f"<CancerPatient(patient_id='{self.patient_id}', cancer_type='{self.cancer_type}')>"
-
-    # ───────────────────────────────────────────────────────────────────────────────
-    # MÉTODO AUXILIAR NECESARIO PARA SERIALIZAR A JSON DESDE app.py:
-    # ───────────────────────────────────────────────────────────────────────────────
+    
+# ───────────────────────────────────────────────────────────────────────────────
+# MÉTODO AUXILIAR NECESARIO PARA SERIALIZAR A JSON DESDE app.py:
+# ───────────────────────────────────────────────────────────────────────────────
     def to_dict(self):
         return {
-            "id":                    self.id,
-            "patient_id":            self.patient_id,
-            "age":                   self.age,
-            "gender":                self.gender,
-            "country_region":        self.country_region,
-            "year":                  self.year,
-            "genetic_risk":          self.genetic_risk,
-            "air_pollution":         self.air_pollution,
-            "alcohol_use":           self.alcohol_use,
-            "smoking":               self.smoking,
-            "obesity_level":         self.obesity_level,
-            "cancer_type":           self.cancer_type,
-            "cancer_stage":          self.cancer_stage,
-            "treatment_cost_usd":    self.treatment_cost_usd,
-            "survival_years":        self.survival_years,
+            "id": self.id,
+            "patient_id": self.patient_id,
+            "age": self.age,
+            "gender": self.gender,
+            "country_region": self.country_region,
+            "year": self.year,
+            "genetic_risk": self.genetic_risk,
+            "air_pollution": self.air_pollution,
+            "alcohol_use": self.alcohol_use,
+            "smoking": self.smoking,
+            "obesity_level": self.obesity_level,
+            "cancer_type": self.cancer_type,
+            "cancer_stage": self.cancer_stage,
+            "treatment_cost_usd": self.treatment_cost_usd,
+            "survival_years": self.survival_years,
             "target_severity_score": self.target_severity_score
         }
 
