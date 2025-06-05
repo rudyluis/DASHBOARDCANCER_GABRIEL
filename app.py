@@ -239,4 +239,6 @@ if __name__ == '__main__':
     # Si la tabla aún no existe, la primera vez descomenta:
     # Base.metadata.create_all(bind=engine)
 
-    app.run(debug=True)
+    ##app.run(debug=True)
+    port = int(os.environ.get("PORT", 5000))  # Render asigna el puerto dinámicamente
+    app.run(host='0.0.0.0', port=port)
