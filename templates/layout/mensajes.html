@@ -1,11 +1,12 @@
 <!-- --------------------------------------------------
      Loader (indica carga en segundo plano)
      -------------------------------------------------- -->
-<div id="loader" class="position-fixed top-50 start-50 translate-middle d-none">
-  <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
-    <span class="visually-hidden">Cargando...</span>
+<div id="loader" class="d-none">
+  <div class="loader-overlay">
+    <img src="{{ url_for('static', filename='img/tu-gif-carga.gif') }}" alt="Cargando..." />
   </div>
 </div>
+
 
 <!-- --------------------------------------------------
      Toast Notifications (Bootstrap 5)
@@ -20,3 +21,5 @@
     </div>
   </div>
 </div>
+
+

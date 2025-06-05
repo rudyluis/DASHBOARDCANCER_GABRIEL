@@ -20,12 +20,14 @@ db_session = Session()
 
 login_manager = LoginManager()
 login_manager.init_app(app)
-login_manager.login_view = 'auth'  # Si no está autenticado, redirect a 'auth'
+login_manager.login_view = 'auth'  # Si no está autenticado, redirige a 'auth'
 
 
 @login_manager.user_loader
 def load_user(user_id):
     try:
+        # SQLAlchemy 2.0: .get() es legacy, pero funciona. 
+        # Podrías usar db_session.get(Usuario, int(user_id)) en lugar de query.get(...)
         return db_session.query(Usuario).get(int(user_id))
     except:
         return None
@@ -44,13 +46,9 @@ def inject_user():
 # -------------------------------------------------------------------
 @app.route('/', methods=['GET', 'POST'])
 def auth():
-    """
-    Muestra el formulario de login/registro (auth.html).  
-    Si ya está autenticado, envía a /dashboard automáticamente.  
-    POST lo maneja aquí: acción 'login' o 'register'.
-    """
-    if current_user.is_authenticated:
-        return redirect(url_for('dashboard'))
+    # ✔ Comentamos o borramos esta validación:
+    # if current_user.is_authenticated:
+    #     return redirect(url_for('dashboard'))
 
     if request.method == 'POST':
         action = request.form.get('action')
@@ -58,7 +56,6 @@ def auth():
         password = request.form.get('password', "").strip()
 
         if action == 'register':
-            # Registrarse: si existe user, mensaje de error; si no, creo y commit.
             existente = db_session.query(Usuario).filter(Usuario.username == username).first()
             if existente:
                 flash('El usuario ya existe', 'danger')
@@ -71,7 +68,6 @@ def auth():
                 return redirect(url_for('auth'))
 
         elif action == 'login':
-            # Login: busco el usuario, comparo hash. Si ok, login_user() y redirijo; si falla, flash error.
             user = db_session.query(Usuario).filter(Usuario.username == username).first()
             if user and check_password_hash(user.password, password):
                 login_user(user)
@@ -81,9 +77,7 @@ def auth():
                 flash('Usuario o contraseña incorrectos', 'danger')
                 return redirect(url_for('auth'))
 
-    # GET puro: muestra auth.html
     return render_template('auth.html')
-
 
 @app.route('/logout')
 @login_required
@@ -99,7 +93,6 @@ def logout():
 @app.route('/dashboard')
 @login_required
 def dashboard():
-    # Muestra el panel principal con todos los gráficos, filtros y tabla.
     return render_template('dashboard.html')
 
 
@@ -109,7 +102,6 @@ def dashboard():
 @app.route('/pacientes')
 @login_required
 def listcancer():
-    # Muestra la página list.html (gestión / CRUD de pacientes)
     return render_template('list.html')
 
 
@@ -119,10 +111,6 @@ def listcancer():
 @app.route('/api/list_cancer', methods=['GET'])
 @login_required
 def api_list_cancer():
-    """
-    Retorna JSON con la lista completa de pacientes.
-    Cada objeto se convierte via CancerPatient.to_dict().
-    """
     pacientes = db_session.query(CancerPatient).all()
     lista = [p.to_dict() for p in pacientes]
     return jsonify(lista)
@@ -131,9 +119,6 @@ def api_list_cancer():
 @app.route('/api/get_cancer/<int:id>', methods=['GET'])
 @login_required
 def api_get_cancer(id):
-    """
-    Retorna JSON de un solo paciente. Si no existe, 404.
-    """
     try:
         paciente = db_session.query(CancerPatient).filter(CancerPatient.id == id).one()
         return jsonify(paciente.to_dict())
@@ -144,12 +129,6 @@ def api_get_cancer(id):
 @app.route('/api/opciones_cancer', methods=['GET'])
 @login_required
 def api_opciones_cancer():
-    """
-    Retorna JSON con listas únicas para llenar los filtros:
-      - regiones
-      - tipos_cancer
-      - anios
-    """
     all_p = db_session.query(CancerPatient).all()
     regiones = sorted({p.country_region for p in all_p if p.country_region})
     tipos_cancer = sorted({p.cancer_type for p in all_p if p.cancer_type})
@@ -164,9 +143,6 @@ def api_opciones_cancer():
 @app.route('/api/add_cancer', methods=['POST'])
 @login_required
 def api_add_cancer():
-    """
-    Crea un nuevo paciente. Recibe JSON con todos los campos.
-    """
     data = request.get_json()
     try:
         nuevo = CancerPatient(
@@ -198,13 +174,9 @@ def api_add_cancer():
 @app.route('/api/upd_cancer/<int:id>', methods=['PUT'])
 @login_required
 def api_upd_cancer(id):
-    """
-    Actualiza un paciente existente. Recibe JSON con todos los campos nuevos.
-    """
     data = request.get_json()
     try:
         paciente = db_session.query(CancerPatient).filter(CancerPatient.id == id).one()
-
         paciente.patient_id = data['patient_id']
         paciente.age = int(data['age'])
         paciente.gender = data['gender']
@@ -220,7 +192,6 @@ def api_upd_cancer(id):
         paciente.treatment_cost_usd = float(data['treatment_cost_usd'])
         paciente.survival_years = float(data['survival_years'])
         paciente.target_severity_score = float(data['target_severity_score'])
-
         db_session.commit()
         return jsonify({'mensaje': 'Paciente actualizado correctamente'})
 
@@ -235,9 +206,6 @@ def api_upd_cancer(id):
 @app.route('/api/del_cancer/<int:id>', methods=['DELETE'])
 @login_required
 def api_del_cancer(id):
-    """
-    Borra el paciente con el id indicado.
-    """
     try:
         paciente = db_session.query(CancerPatient).filter(CancerPatient.id == id).one()
         db_session.delete(paciente)
@@ -253,23 +221,22 @@ def api_del_cancer(id):
 
 
 # -------------------------------------------------------------------
-# 6) Manejo básico de errores (opcional)
+# 6) Manejo básico de errores (sin templates faltantes)
 # -------------------------------------------------------------------
 @app.errorhandler(404)
 def page_not_found(e):
-    return render_template('404.html'), 404
-
+    return "Página no encontrada (404)", 404
 
 @app.errorhandler(500)
 def server_error(e):
-    return render_template('500.html'), 500
+    return "Error interno del servidor (500)", 500
 
 
 # -------------------------------------------------------------------
 # 7) Entry point
 # -------------------------------------------------------------------
 if __name__ == '__main__':
-    # Si la tabla aún no existe, descomenta la siguiente línea la primera vez:
+    # Si la tabla aún no existe, la primera vez descomenta:
     # Base.metadata.create_all(bind=engine)
 
     app.run(debug=True)

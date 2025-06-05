@@ -3,26 +3,36 @@
 let allData = [];
 let filteredData = [];
 
-// Al cargar la página
+// --------------------------------------------------------
+// 1) Al cargar la página
+// --------------------------------------------------------
 $(document).ready(function () {
-  // Inicializa los selects como Select2
+  // 1.1) Verificar que el loader y los indicadores existen (puedes quitar estos console.log una vez funcione)
+  console.log("#loader encontrado?", $('#loader').length);
+  console.log("#totalPacientes encontrado?", $('#totalPacientes').length);
+  console.log("#tipoComun encontrado?", $('#tipoComun').length);
+  console.log("#regionTop encontrado?", $('#regionTop').length);
+  console.log("#topYear encontrado?", $('#topYear').length);
+
+  // 1.2) Inicializar Select2 en filtros
   $('#filterRegion, #filterCancerType, #filterYear').select2({
     placeholder: "Seleccionar...",
+    multiple: true,
     allowClear: true,
     width: '100%',
-    closeOnSelect: false,
+    closeOnSelect: true,
     minimumResultsForSearch: 0,
     theme: 'bootstrap-5'
   }).on('select2:select select2:unselect', function () {
     aplicarFiltrosYGraficos();
   });
 
-  // Input de búsqueda por Patient_ID
+  // 1.3) Búsqueda por Patient_ID
   $('#searchPatientId').on('input', function () {
     aplicarFiltrosYGraficos();
   });
 
-  // Botón toggle de tema
+  // 1.4) Toggle de tema
   $('#toggleTheme').on('click', function () {
     const html = document.documentElement;
     const isDark = html.getAttribute('data-bs-theme') === 'dark';
@@ -30,47 +40,73 @@ $(document).ready(function () {
     this.textContent = isDark ? 'Modo Oscuro 🌙' : 'Modo Claro 🌞';
   });
 
-  // Cargar todos los pacientes desde la BD
+  // 1.5) Mostrar/Ocultar tabla completa (incluyendo título)
+  $('#toggleTable').on('click', function () {
+    $('#tablaContainer, #tableTitle').toggleClass('d-none');
+    const oculto = $('#tablaContainer').hasClass('d-none');
+    $(this).text(oculto ? 'Mostrar Tabla de Datos' : 'Ocultar Tabla de Datos');
+  });
+
+  // 1.6) Mostrar/Ocultar sección de gráficos (y título)
+  $('#toggleCharts').on('click', function () {
+    $('#sectionCharts, #chartsTitle').toggleClass('d-none');
+    const ocultoCharts = $('#sectionCharts').hasClass('d-none');
+    $(this).text(ocultoCharts ? 'Ver Gráficos Representativos' : 'Ocultar Gráficos Representativos');
+  });
+
+  // 1.7) Cargar datos por primera vez
   cargarDatosIniciales();
 });
 
 // --------------------------------------------------------
-// 1) Cargar datos desde el backend (/api/list_cancer)
+// 2) Cargar datos del backend y renderizar todo
 // --------------------------------------------------------
 function cargarDatosIniciales() {
+  // Mostrar loader
   $('#loader').removeClass('d-none');
+  console.log("Iniciando AJAX /api/list_cancer…");
+
   $.ajax({
     url: "/api/list_cancer",
     method: "GET",
     dataType: "json",
+
     success: function (data) {
-      allData = data;
-      filteredData = [...allData];
+      try {
+        allData      = data;
+        filteredData = [...allData];
 
-      // Llenar filtros (opciones únicas)
-      popularFiltros();
+        // Llenar filtros con valores únicos
+        popularFiltros();
 
-      // Mostrar indicadores y gráficos con TODOS los datos
-      actualizarStatsCards();
-      cargarTabla(filteredData);
-      renderGraficos(filteredData);
+        // Actualizar indicadores, tabla y gráficos
+        actualizarStatsCards();
+        cargarTabla(filteredData);
+        renderGraficos(filteredData);
+
+      } catch (e) {
+        console.error("Error en success() al procesar datos:", e);
+      }
     },
+
     error: function (xhr, status, error) {
       console.error("Error al cargar los datos:", error);
     },
+
     complete: function () {
+      // Ocultar loader
       $('#loader').addClass('d-none');
     }
   });
 }
 
 // --------------------------------------------------------
-// 2) Popular filtros: región, tipo cáncer, año
+// 3) Popular filtros: región, tipo de cáncer, año
 // --------------------------------------------------------
 function popularFiltros() {
-  const regiones = [...new Set(allData.map(d => d.country_region).filter(Boolean))].sort();
+  const regiones    = [...new Set(allData.map(d => d.country_region).filter(Boolean))].sort();
   const tiposCancer = [...new Set(allData.map(d => d.cancer_type).filter(Boolean))].sort();
-  const anios = [...new Set(allData.map(d => d.year).filter(Boolean))].sort();
+  const anios       = [...new Set(allData.map(d => d.year).filter(v => v != null))].sort();
 
   llenarCombo('#filterRegion', regiones);
   llenarCombo('#filterCancerType', tiposCancer);
@@ -79,26 +115,27 @@ function popularFiltros() {
 
 function llenarCombo(selector, valores) {
   const select = $(selector);
-  select.empty().append('<option value=""></option>'); // Opción vacía
+  select.empty().append('<option value=""></option>');
   valores.forEach(v => {
     select.append(`<option value="${v}">${v}</option>`);
   });
+  // disparar el evento de Select2 para refrescar la lista
   select.trigger('change.select2');
 }
 
 // --------------------------------------------------------
-// 3) Aplicar filtros + búsqueda + recálculo de indicadores + gráficos + tabla
+// 4) Aplicar filtros + búsqueda + re-render de todo
 // --------------------------------------------------------
 function aplicarFiltrosYGraficos() {
   const region = $('#filterRegion').val() || [];
-  const tipo = $('#filterCancerType').val() || [];
-  const anio = $('#filterYear').val() || [];
+  const tipo   = $('#filterCancerType').val() || [];
+  const anio   = $('#filterYear').val() || [];
   const search = $('#searchPatientId').val().toLowerCase();
 
   filteredData = allData.filter(d =>
     (region.length === 0 || region.includes(d.country_region)) &&
-    (tipo.length === 0 || tipo.includes(d.cancer_type)) &&
-    (anio.length === 0 || anio.includes(String(d.year))) &&
+    (tipo.length   === 0 || tipo.includes(d.cancer_type)) &&
+    (anio.length   === 0 || anio.includes(String(d.year))) &&
     (!search || (d.patient_id && d.patient_id.toLowerCase().includes(search)))
   );
 
@@ -108,13 +145,13 @@ function aplicarFiltrosYGraficos() {
 }
 
 // --------------------------------------------------------
-// 4) Actualizar 4 indicadores superiores
+// 5) Actualizar los 4 indicadores superiores
 // --------------------------------------------------------
 function actualizarStatsCards() {
-  // Total de pacientes (después de filtrar)
+  // Total de pacientes
   const total = filteredData.length;
 
-  // Tipo de cáncer más común (después de filtrar)
+  // Tipo de cáncer más común
   const countTipo = {};
   filteredData.forEach(d => {
     const t = d.cancer_type || 'Desconocido';
@@ -124,7 +161,7 @@ function actualizarStatsCards() {
     ? Object.keys(countTipo).reduce((a, b) => countTipo[a] > countTipo[b] ? a : b)
     : 'N/A';
 
-  // Región con más pacientes (después de filtrar)
+  // Región con más pacientes
   const countRegion = {};
   filteredData.forEach(d => {
     const r = d.country_region || 'Desconocido';
@@ -134,12 +171,12 @@ function actualizarStatsCards() {
     ? Object.keys(countRegion).reduce((a, b) => countRegion[a] > countRegion[b] ? a : b)
     : 'N/A';
 
-  // Año con mayor promedio de supervivencia (después de filtrar)
-  const sumaPorYear = {};
+  // Año con mayor promedio de supervivencia
+  const sumaPorYear  = {};
   const countPorYear = {};
   filteredData.forEach(d => {
     if (d.year != null && !isNaN(d.survival_years)) {
-      sumaPorYear[d.year] = (sumaPorYear[d.year] || 0) + d.survival_years;
+      sumaPorYear[d.year]  = (sumaPorYear[d.year]  || 0) + d.survival_years;
       countPorYear[d.year] = (countPorYear[d.year] || 0) + 1;
     }
   });
@@ -159,15 +196,13 @@ function actualizarStatsCards() {
 }
 
 // --------------------------------------------------------
-// 5) Cargar tabla (DataTables) con datos “filteredData”
+// 6) Cargar tabla (DataTables) con “filteredData”
 // --------------------------------------------------------
 function cargarTabla(data) {
-  // Destruye si ya existe
   if ($.fn.DataTable.isDataTable('#tablaCancer')) {
     $('#tablaCancer').DataTable().clear().destroy();
   }
 
-  // Formateamos el array para DataTables
   const rows = data.map(p => [
     p.id,
     p.patient_id,
@@ -185,7 +220,7 @@ function cargarTabla(data) {
     p.treatment_cost_usd.toFixed(2),
     p.survival_years.toFixed(2),
     p.target_severity_score.toFixed(2),
-    p.id  // para los botones de acción
+    p.id // para los botones
   ]);
 
   $('#tablaCancer').DataTable({
@@ -204,7 +239,7 @@ function cargarTabla(data) {
       { title: "Obesidad", className: "text-end" },
       { title: "Tipo Cáncer" },
       { title: "Etapa" },
-      { title: "Costo (USD)", className: "text-end" },
+      { title: "Costo USD", className: "text-end" },
       { title: "Supervivencia", className: "text-end" },
       { title: "Severity Score", className: "text-end" },
       {
@@ -241,27 +276,37 @@ function cargarTabla(data) {
 }
 
 // --------------------------------------------------------
-// 6) Renderizar todos los gráficos (incluye 2 nuevos)
+// 7) Función renderGraficos(data): dibujar TODOS los charts
 // --------------------------------------------------------
 function renderGraficos(data) {
-  // Destruir gráficos previos
+  // 7.1) Destruir todos los charts previos si existen
   [
-    'barChart', 'doughnutChart', 'lineChart', 'scatterChart', 'radarChart',
-    'histChart', 'bubbleChart', 'pieGenero', 'barYear'
+    'barChart',
+    'doughnutChart',
+    'lineChart',
+    'scatterChart',
+    'heatmapChart',
+    'histChart',
+    'bubbleChart',
+    'pieGenero',
+    'barYear'
   ].forEach(id => {
-    Chart.getChart(id)?.destroy();
+    const existing = Chart.getChart(id);
+    if (existing) existing.destroy();
   });
 
-  // 6.1) Ventas por Tipo de Cáncer (Bar)
+  // ------------------------------------------------------------------------
+  // 7.2) Bar: Pacientes por Tipo de Cáncer
+  // ------------------------------------------------------------------------
   const countTipo = {};
   data.forEach(d => {
     const t = d.cancer_type || 'Desconocido';
     countTipo[t] = (countTipo[t] || 0) + 1;
   });
-  const tipos = Object.keys(countTipo);
-  const valoresTipo = tipos.map(t => countTipo[t]);
-  const coloresBar = tipos.map((_, i) =>
-    `rgba(${50 + i*20}, ${10 + i*15}, ${30 + i*25}, 0.7)`
+  const tipos         = Object.keys(countTipo);
+  const valoresTipo   = tipos.map(t => countTipo[t]);
+  const coloresBar    = tipos.map((_, i) =>
+    `rgba(${50 + i * 20}, ${10 + i * 15}, ${30 + i * 25}, 0.7)`
   );
 
   new Chart(document.getElementById('barChart'), {
@@ -284,37 +329,42 @@ function renderGraficos(data) {
           display: true,
           text: 'Pacientes por Tipo de Cáncer',
           font: { size: 18, weight: '600' },
-          color: (document.documentElement.getAttribute('data-bs-theme') === 'dark') ? '#f2ece4' : '#7b0d2b'
-        },
-        tooltip: {
-          callbacks: {
-            label: function(context) {
-              return `${context.dataset.label}: ${context.raw}`;
-            }
-          }
+          color: document.documentElement.getAttribute('data-bs-theme') === 'dark'
+            ? '#f2ece4'
+            : '#7b0d2b'
         },
         legend: { display: false }
       },
       scales: {
         x: {
-          ticks: { color: (document.documentElement.getAttribute('data-bs-theme') === 'dark') ? '#f2ece4' : '#333333' },
+          ticks: {
+            color: document.documentElement.getAttribute('data-bs-theme') === 'dark'
+              ? '#f2ece4'
+              : '#333333'
+          },
           grid: { display: false }
         },
         y: {
-          ticks: { color: (document.documentElement.getAttribute('data-bs-theme') === 'dark') ? '#f2ece4' : '#333333' },
+          ticks: {
+            color: document.documentElement.getAttribute('data-bs-theme') === 'dark'
+              ? '#f2ece4'
+              : '#333333'
+          },
           grid: { color: 'rgba(255, 255, 255, 0.1)' }
         }
       }
     }
   });
 
-  // 6.2) Etapas de Cáncer (Doughnut)
-  const countStage = {};
+  // ------------------------------------------------------------------------
+  // 7.3) Doughnut: Etapas de Cáncer
+  // ------------------------------------------------------------------------
+  const countStage   = {};
   data.forEach(d => {
     const s = d.cancer_stage || 'Desconocido';
     countStage[s] = (countStage[s] || 0) + 1;
   });
-  const stages = Object.keys(countStage);
+  const stages       = Object.keys(countStage);
   const valoresStage = stages.map(s => countStage[s]);
   const coloresDonut = ['#c94f6d','#ff7f50','#d4af37','#7b0d2b','#531c29','#f2ece4'];
 
@@ -324,7 +374,7 @@ function renderGraficos(data) {
       labels: stages,
       datasets: [{
         data: valoresStage,
-        backgroundColor: stages.map((_,i) => coloresDonut[i % coloresDonut.length]),
+        backgroundColor: stages.map((_, i) => coloresDonut[i % coloresDonut.length]),
         hoverOffset: 12
       }]
     },
@@ -337,32 +387,40 @@ function renderGraficos(data) {
           display: true,
           text: 'Distribución por Etapa de Cáncer',
           font: { size: 18 },
-          color: (document.documentElement.getAttribute('data-bs-theme') === 'dark') ? '#f2ece4' : '#7b0d2b'
+          color: document.documentElement.getAttribute('data-bs-theme') === 'dark'
+            ? '#f2ece4'
+            : '#7b0d2b'
         },
         tooltip: {
           callbacks: {
-            label: function (context) {
-              const total = context.dataset.data.reduce((a, b) => a + b, 0);
-              const percentage = total > 0 ? ((context.raw / total) * 100).toFixed(2) : 0;
-              return `${context.label}: ${context.raw} (${percentage}%)`;
+            label: function(context) {
+              const total = context.dataset.data.reduce((a,b) => a + b, 0);
+              const pct   = total > 0 ? ((context.raw / total) * 100).toFixed(2) : 0;
+              return `${context.label}: ${context.raw} (${pct}%)`;
             }
           }
-        },
+        }
+      },
+      plugins: {
         legend: {
           position: 'bottom',
           labels: {
-            color: (document.documentElement.getAttribute('data-bs-theme') === 'dark') ? '#f2ece4' : '#333333'
+            color: document.documentElement.getAttribute('data-bs-theme') === 'dark'
+              ? '#f2ece4'
+              : '#333333'
           }
         }
       }
     }
   });
 
-  // 6.3) Supervivencia media por Año (Line)
-  const years = [...new Set(data.map(d => d.year))].sort((a,b) => a - b);
+  // ------------------------------------------------------------------------
+  // 7.4) Line: Supervivencia Media por Año
+  // ------------------------------------------------------------------------
+  const years   = [...new Set(data.map(d => d.year))].sort((a,b) => a - b);
   const avgSurv = years.map(y => {
     const arr = data.filter(d => d.year === y).map(d => d.survival_years);
-    return arr.length ? (arr.reduce((a,b) => a + b, 0) / arr.length).toFixed(2) : 0;
+    return arr.length ? (arr.reduce((a, b) => a + b, 0) / arr.length).toFixed(2) : 0;
   });
 
   new Chart(document.getElementById('lineChart'), {
@@ -372,15 +430,21 @@ function renderGraficos(data) {
       datasets: [{
         label: 'Supervivencia Media',
         data: avgSurv,
-        borderColor: (document.documentElement.getAttribute('data-bs-theme') === 'dark') ? '#c94f6d' : '#7b0d2b',
-        backgroundColor: (document.documentElement.getAttribute('data-bs-theme') === 'dark')
+        borderColor: document.documentElement.getAttribute('data-bs-theme') === 'dark'
+          ? '#c94f6d'
+          : '#7b0d2b',
+        backgroundColor: document.documentElement.getAttribute('data-bs-theme') === 'dark'
           ? 'rgba(201, 79, 109, 0.4)'
           : 'rgba(123, 13, 43, 0.3)',
         tension: 0.4,
         fill: true,
         pointRadius: 5,
-        pointBackgroundColor: (document.documentElement.getAttribute('data-bs-theme') === 'dark') ? '#f2ece4' : '#ffffff',
-        pointBorderColor: (document.documentElement.getAttribute('data-bs-theme') === 'dark') ? '#c94f6d' : '#7b0d2b'
+        pointBackgroundColor: document.documentElement.getAttribute('data-bs-theme') === 'dark'
+          ? '#f2ece4'
+          : '#ffffff',
+        pointBorderColor: document.documentElement.getAttribute('data-bs-theme') === 'dark'
+          ? '#c94f6d'
+          : '#7b0d2b'
       }]
     },
     options: {
@@ -391,36 +455,43 @@ function renderGraficos(data) {
           display: true,
           text: 'Supervivencia Media por Año',
           font: { size: 18 },
-          color: (document.documentElement.getAttribute('data-bs-theme') === 'dark') ? '#f2ece4' : '#7b0d2b'
+          color: document.documentElement.getAttribute('data-bs-theme') === 'dark'
+            ? '#f2ece4'
+            : '#7b0d2b'
         },
         tooltip: {
           callbacks: {
-            label: function (context) {
+            label: function(context) {
               return `${context.dataset.label}: ${context.raw} años`;
             }
-          }
-        },
-        legend: {
-          labels: {
-            color: (document.documentElement.getAttribute('data-bs-theme') === 'dark') ? '#f2ece4' : '#333333'
           }
         }
       },
       scales: {
         x: {
-          ticks: { color: (document.documentElement.getAttribute('data-bs-theme') === 'dark') ? '#f2ece4' : '#333333' },
+          ticks: {
+            color: document.documentElement.getAttribute('data-bs-theme') === 'dark'
+              ? '#f2ece4'
+              : '#333333'
+          },
           grid: { color: 'rgba(255,255,255,0.1)' }
         },
         y: {
           beginAtZero: true,
-          ticks: { color: (document.documentElement.getAttribute('data-bs-theme') === 'dark') ? '#f2ece4' : '#333333' },
+          ticks: {
+            color: document.documentElement.getAttribute('data-bs-theme') === 'dark'
+              ? '#f2ece4'
+              : '#333333'
+          },
           grid: { color: 'rgba(255,255,255,0.1)' }
         }
       }
     }
   });
 
-  // 6.4) Riesgo Genético vs Costo (Scatter)
+  // ------------------------------------------------------------------------
+  // 7.5) Scatter: Riesgo Genético vs Costo (log10 USD)
+  // ------------------------------------------------------------------------
   new Chart(document.getElementById('scatterChart'), {
     type: 'scatter',
     data: {
@@ -430,8 +501,10 @@ function renderGraficos(data) {
           x: p.genetic_risk,
           y: Math.log10(p.treatment_cost_usd > 0 ? p.treatment_cost_usd : 1)
         })),
-        pointBackgroundColor: (document.documentElement.getAttribute('data-bs-theme') === 'dark') ? '#d4af37' : '#7b0d2b',
-        pointBorderColor: (document.documentElement.getAttribute('data-bs-theme') === 'dark') ? '#ffffff' : '#ffffff',
+        pointBackgroundColor: document.documentElement.getAttribute('data-bs-theme') === 'dark'
+          ? '#d4af37'
+          : '#7b0d2b',
+        pointBorderColor: '#ffffff',
         pointRadius: 6,
         pointHoverRadius: 8
       }]
@@ -444,13 +517,17 @@ function renderGraficos(data) {
           title: {
             display: true,
             text: 'Riesgo Genético',
-            color: (document.documentElement.getAttribute('data-bs-theme') === 'dark') ? '#f2ece4' : '#333333'
+            color: document.documentElement.getAttribute('data-bs-theme') === 'dark'
+              ? '#f2ece4'
+              : '#333333'
           },
           ticks: {
-            color: (document.documentElement.getAttribute('data-bs-theme') === 'dark') ? '#f2ece4' : '#333333'
+            color: document.documentElement.getAttribute('data-bs-theme') === 'dark'
+              ? '#f2ece4'
+              : '#333333'
           },
           grid: {
-            color: (document.documentElement.getAttribute('data-bs-theme') === 'dark')
+            color: document.documentElement.getAttribute('data-bs-theme') === 'dark'
               ? 'rgba(255,255,255,0.1)'
               : 'rgba(0,0,0,0.1)'
           }
@@ -458,14 +535,18 @@ function renderGraficos(data) {
         y: {
           title: {
             display: true,
-            text: 'Costo (log10 USD)',
-            color: (document.documentElement.getAttribute('data-bs-theme') === 'dark') ? '#f2ece4' : '#333333'
+            text: 'log₁₀(Costo USD)',
+            color: document.documentElement.getAttribute('data-bs-theme') === 'dark'
+              ? '#f2ece4'
+              : '#333333'
           },
           ticks: {
-            color: (document.documentElement.getAttribute('data-bs-theme') === 'dark') ? '#f2ece4' : '#333333'
+            color: document.documentElement.getAttribute('data-bs-theme') === 'dark'
+              ? '#f2ece4'
+              : '#333333'
           },
           grid: {
-            color: (document.documentElement.getAttribute('data-bs-theme') === 'dark')
+            color: document.documentElement.getAttribute('data-bs-theme') === 'dark'
               ? 'rgba(255,255,255,0.1)'
               : 'rgba(0,0,0,0.1)'
           }
@@ -474,130 +555,127 @@ function renderGraficos(data) {
       plugins: {
         title: {
           display: true,
-          text: 'Riesgo Genético vs Costo (log10)',
+          text: 'Riesgo Genético vs Costo (log₁₀)',
           font: { size: 18 },
-          color: (document.documentElement.getAttribute('data-bs-theme') === 'dark') ? '#f2ece4' : '#333333'
+          color: document.documentElement.getAttribute('data-bs-theme') === 'dark'
+            ? '#f2ece4'
+            : '#333333'
         },
         tooltip: {
           callbacks: {
-            label: function (context) {
-              return `Gen.Riesgo: ${context.raw.x}, log10(Costo): ${context.raw.y.toFixed(2)}`;
+            label: function(context) {
+              return `Gen.Riesgo: ${context.raw.x}, log₁₀(Costo): ${context.raw.y.toFixed(2)}`;
             }
-          }
-        },
-        legend: {
-          labels: {
-            color: (document.documentElement.getAttribute('data-bs-theme') === 'dark') ? '#f2ece4' : '#333333'
           }
         }
       }
     }
   });
 
-  // 6.5) Radar: Aire vs Obesidad promedio por Región
-  const grupos = {};
-  data.forEach(p => {
-    if (!grupos[p.country_region]) {
-      grupos[p.country_region] = { aire: [], obesidad: [] };
-    }
-    grupos[p.country_region].aire.push(p.air_pollution);
-    grupos[p.country_region].obesidad.push(p.obesity_level);
+  // ------------------------------------------------------------------------
+  // 7.6) Heatmap: Correlación Aire vs Obesidad por Región
+  // ------------------------------------------------------------------------
+  const regionesSet = [...new Set(data.map(d => d.country_region).filter(Boolean))].sort();
+  const valoresAire = regionesSet.map(r => {
+    const arr = data.filter(d => d.country_region === r).map(d => d.air_pollution);
+    return arr.length ? (arr.reduce((a,b) => a + b, 0) / arr.length).toFixed(2) : 0;
   });
-  const regiones = Object.keys(grupos);
-  const promAire = regiones.map(r => {
-    const arr = grupos[r].aire;
-    return arr.length ? (arr.reduce((a, b) => a + b, 0) / arr.length).toFixed(2) : 0;
-  });
-  const promObesidad = regiones.map(r => {
-    const arr = grupos[r].obesidad;
-    return arr.length ? (arr.reduce((a, b) => a + b, 0) / arr.length).toFixed(2) : 0;
+  const valoresObesidad = regionesSet.map(r => {
+    const arr = data.filter(d => d.country_region === r).map(d => d.obesity_level);
+    return arr.length ? (arr.reduce((a,b) => a + b, 0) / arr.length).toFixed(2) : 0;
   });
 
-  new Chart(document.getElementById('radarChart'), {
-    type: 'radar',
+  const matrixData = [];
+  regionesSet.forEach((r, i) => {
+    regionesSet.forEach((c, j) => {
+      const value = parseFloat(valoresAire[j]) + parseFloat(valoresObesidad[i]);
+      matrixData.push({ x: j, y: i, v: value });
+    });
+  });
+
+  new Chart(document.getElementById('heatmapChart'), {
+    type: 'matrix',
     data: {
-      labels: regiones,
       datasets: [{
-        label: 'Aire (promedio)',
-        data: promAire,
-        borderColor: (document.documentElement.getAttribute('data-bs-theme') === 'dark')
-          ? '#c94f6d'
-          : '#7b0d2b',
-        backgroundColor: (document.documentElement.getAttribute('data-bs-theme') === 'dark')
-          ? 'rgba(201, 79, 109, 0.4)'
-          : 'rgba(123, 13, 43, 0.3)'
-      }, {
-        label: 'Obesidad (promedio)',
-        data: promObesidad,
-        borderColor: (document.documentElement.getAttribute('data-bs-theme') === 'dark')
-          ? '#d4af37'
-          : '#c94f6d',
-        backgroundColor: (document.documentElement.getAttribute('data-bs-theme') === 'dark')
-          ? 'rgba(212, 175, 55, 0.4)'
-          : 'rgba(201, 79, 109, 0.3)'
+        label: 'Heatmap Aire+Obesidad',
+        data: matrixData,
+        backgroundColor: function(ctx) {
+          const v = ctx.dataset.data[ctx.dataIndex].v;
+          const alpha = Math.min(1, v / (Math.max(...matrixData.map(m=>m.v)) + 1));
+          return `rgba(201,79,109, ${alpha})`;
+        },
+        borderColor: '#2b1a1f',
+        borderWidth: 1,
+        width: ({chart}) => (chart.scales.x.width / regionesSet.length) - 1,
+        height: ({chart}) => (chart.scales.y.height / regionesSet.length) - 1
       }]
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
       scales: {
-        r: {
-          grid: {
-            color: (document.documentElement.getAttribute('data-bs-theme') === 'dark')
-              ? 'rgba(255,255,255,0.1)'
-              : 'rgba(0,0,0,0.1)'
-          },
-          angleLines: {
-            color: (document.documentElement.getAttribute('data-bs-theme') === 'dark')
-              ? 'rgba(255,255,255,0.1)'
-              : 'rgba(0,0,0,0.1)'
-          },
-          pointLabels: {
-            color: (document.documentElement.getAttribute('data-bs-theme') === 'dark') ? '#f2ece4' : '#333333'
-          },
+        x: {
+          type: 'category',
+          labels: regionesSet,
+          offset: true,
+          grid: { display: false },
           ticks: {
-            color: (document.documentElement.getAttribute('data-bs-theme') === 'dark') ? '#f2ece4' : '#333333'
+            color: document.documentElement.getAttribute('data-bs-theme') === 'dark'
+              ? '#f2ece4'
+              : '#333333'
+          }
+        },
+        y: {
+          type: 'category',
+          labels: regionesSet,
+          offset: true,
+          grid: { display: false },
+          ticks: {
+            color: document.documentElement.getAttribute('data-bs-theme') === 'dark'
+              ? '#f2ece4'
+              : '#333333'
           }
         }
       },
       plugins: {
         title: {
           display: true,
-          text: 'Aire vs Obesidad promedio por Región',
+          text: 'Heatmap Promedio Aire vs Obesidad por Región',
           font: { size: 18 },
-          color: (document.documentElement.getAttribute('data-bs-theme') === 'dark') ? '#f2ece4' : '#333333'
+          color: document.documentElement.getAttribute('data-bs-theme') === 'dark'
+            ? '#f2ece4'
+            : '#333333'
         },
         tooltip: {
           callbacks: {
             label: function(context) {
-              return `${context.dataset.label}: ${context.raw}`;
+              const d = context.raw;
+              return `${regionesSet[d.y]} / ${regionesSet[d.x]}: ${d.v.toFixed(2)}`;
             }
           }
         },
-        legend: {
-          labels: {
-            color: (document.documentElement.getAttribute('data-bs-theme') === 'dark') ? '#f2ece4' : '#333333'
-          }
-        }
+        legend: { display: false }
       }
     }
   });
 
-  // 6.6) Histograma de Edades (Bar “arcoíris”)
-  const ages = data.map(p => p.age);
-  const maxAge = Math.ceil(Math.max(...ages) / 10) * 10;
-  const bins = Array.from({ length: maxAge / 10 }, (_, i) => 10 * i);
+  // ------------------------------------------------------------------------
+  // 7.7) Histograma de Edades (Bar “arcoíris”)
+  // ------------------------------------------------------------------------
+  const ages    = data.map(p => p.age);
+  const maxAge  = Math.ceil(Math.max(...ages) / 10) * 10;
+  const bins    = Array.from({ length: maxAge / 10 }, (_, i) => 10 * i);
   const ageCounts = bins.map(start => ages.filter(a => a >= start && a < start + 10).length);
-  const rainbow = ['#c94f6d','#ff7f50','#d4af37','#7b0d2b','#531c29','#f2ece4','#a83232','#ffb3b3'];
+  const rainbow   = ['#c94f6d','#ff7f50','#d4af37','#7b0d2b','#531c29','#f2ece4','#a83232','#ffb3b3'];
 
   new Chart(document.getElementById('histChart'), {
     type: 'bar',
     data: {
-      labels: bins.map(b => `${b}-${b+9}`),
+      labels: bins.map(b => `${b}-${b + 9}`),
       datasets: [{
         label: "Pacientes",
         data: ageCounts,
-        backgroundColor: bins.map((_,i) => rainbow[i % rainbow.length]),
+        backgroundColor: bins.map((_, i) => rainbow[i % rainbow.length]),
         borderColor: '#000000',
         borderWidth: 1
       }]
@@ -610,36 +688,44 @@ function renderGraficos(data) {
           display: true,
           text: 'Distribución de Edades',
           font: { size: 18 },
-          color: (document.documentElement.getAttribute('data-bs-theme') === 'dark') ? '#f2ece4' : '#333333'
+          color: document.documentElement.getAttribute('data-bs-theme') === 'dark'
+            ? '#f2ece4'
+            : '#333333'
         },
         legend: { display: false }
       },
       scales: {
         x: {
           ticks: {
-            color: (document.documentElement.getAttribute('data-bs-theme') === 'dark') ? '#f2ece4' : '#333333',
+            color: document.documentElement.getAttribute('data-bs-theme') === 'dark'
+              ? '#f2ece4'
+              : '#333333',
             autoSkip: false,
             maxRotation: 45,
             minRotation: 45
           },
-          grid: {
-            color: 'rgba(0,0,0,0)'
-          }
+          grid: { display: false }
         },
         y: {
           beginAtZero: true,
           ticks: {
-            color: (document.documentElement.getAttribute('data-bs-theme') === 'dark') ? '#f2ece4' : '#333333'
+            color: document.documentElement.getAttribute('data-bs-theme') === 'dark'
+              ? '#f2ece4'
+              : '#333333'
           },
           grid: {
-            color: (document.documentElement.getAttribute('data-bs-theme') === 'dark') ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'
+            color: document.documentElement.getAttribute('data-bs-theme') === 'dark'
+              ? 'rgba(255,255,255,0.1)'
+              : 'rgba(0,0,0,0.1)'
           }
         }
       }
     }
   });
 
-  // 6.7) Burbuja: Alcohol vs Fumar (radius = severity * 2)
+  // ------------------------------------------------------------------------
+  // 7.8) Bubble: Alcohol vs Fumar (radio = severity * 3)
+  // ------------------------------------------------------------------------
   new Chart(document.getElementById('bubbleChart'), {
     type: 'bubble',
     data: {
@@ -651,10 +737,12 @@ function renderGraficos(data) {
           r: Math.min(p.target_severity_score * 3, 25),
           name: p.patient_id
         })),
-        backgroundColor: (document.documentElement.getAttribute('data-bs-theme') === 'dark')
+        backgroundColor: document.documentElement.getAttribute('data-bs-theme') === 'dark'
           ? 'rgba(201, 79, 109, 0.6)'
           : 'rgba(123, 13, 43, 0.6)',
-        borderColor: (document.documentElement.getAttribute('data-bs-theme') === 'dark') ? '#f2ece4' : '#333333',
+        borderColor: document.documentElement.getAttribute('data-bs-theme') === 'dark'
+          ? '#f2ece4'
+          : '#333333',
         borderWidth: 1
       }]
     },
@@ -664,9 +752,11 @@ function renderGraficos(data) {
       plugins: {
         title: {
           display: true,
-          text: 'Alcohol vs Fumar (Sev. Score como Radio)',
+          text: 'Alcohol vs Fumar (Severity Score como Radio)',
           font: { size: 18 },
-          color: (document.documentElement.getAttribute('data-bs-theme') === 'dark') ? '#f2ece4' : '#333333'
+          color: document.documentElement.getAttribute('data-bs-theme') === 'dark'
+            ? '#f2ece4'
+            : '#333333'
         },
         tooltip: {
           callbacks: {
@@ -675,11 +765,6 @@ function renderGraficos(data) {
               return `${d.name}: Alcohol ${d.x}, Fumar ${d.y}, Radio ${d.r}`;
             }
           }
-        },
-        legend: {
-          labels: {
-            color: (document.documentElement.getAttribute('data-bs-theme') === 'dark') ? '#f2ece4' : '#333333'
-          }
         }
       },
       scales: {
@@ -687,43 +772,55 @@ function renderGraficos(data) {
           title: {
             display: true,
             text: 'Alcohol Use',
-            color: (document.documentElement.getAttribute('data-bs-theme') === 'dark') ? '#f2ece4' : '#333333'
+            color: document.documentElement.getAttribute('data-bs-theme') === 'dark'
+              ? '#f2ece4'
+              : '#333333'
           },
           ticks: {
-            color: (document.documentElement.getAttribute('data-bs-theme') === 'dark') ? '#f2ece4' : '#333333'
+            color: document.documentElement.getAttribute('data-bs-theme') === 'dark'
+              ? '#f2ece4'
+              : '#333333'
           },
           grid: {
-            color: (document.documentElement.getAttribute('data-bs-theme') === 'dark') ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'
+            color: document.documentElement.getAttribute('data-bs-theme') === 'dark'
+              ? 'rgba(255,255,255,0.1)'
+              : 'rgba(0,0,0,0.1)'
           }
         },
         y: {
           title: {
             display: true,
             text: 'Fumar',
-            color: (document.documentElement.getAttribute('data-bs-theme') === 'dark') ? '#f2ece4' : '#333333'
+            color: document.documentElement.getAttribute('data-bs-theme') === 'dark'
+              ? '#f2ece4'
+              : '#333333'
           },
           ticks: {
-            color: (document.documentElement.getAttribute('data-bs-theme') === 'dark') ? '#f2ece4' : '#333333'
+            color: document.documentElement.getAttribute('data-bs-theme') === 'dark'
+              ? '#f2ece4'
+              : '#333333'
           },
           grid: {
-            color: (document.documentElement.getAttribute('data-bs-theme') === 'dark') ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'
+            color: document.documentElement.getAttribute('data-bs-theme') === 'dark'
+              ? 'rgba(255,255,255,0.1)'
+              : 'rgba(0,0,0,0.1)'
           }
         }
       }
     }
   });
 
-  // ----------------------------------------
-  // 6.8) NUEVO: PIE Chart -> Distribución por Género
-  // ----------------------------------------
-  const countGenero = {};
+  // ------------------------------------------------------------------------
+  // 7.9) Pie: Distribución por Género
+  // ------------------------------------------------------------------------
+  const countGenero  = {};
   data.forEach(p => {
     const g = p.gender || 'Desconocido';
     countGenero[g] = (countGenero[g] || 0) + 1;
   });
-  const generos = Object.keys(countGenero);
+  const generos       = Object.keys(countGenero);
   const valoresGenero = generos.map(g => countGenero[g]);
-  const coloresPie = ['#c94f6d', '#7b0d2b', '#ffa07a', '#d4af37'];
+  const coloresPie    = ['#c94f6d', '#7b0d2b', '#ffa07a', '#d4af37'];
 
   new Chart(document.getElementById('pieGenero'), {
     type: 'pie',
@@ -744,13 +841,15 @@ function renderGraficos(data) {
           display: true,
           text: 'Distribución de Pacientes por Género',
           font: { size: 18 },
-          color: (document.documentElement.getAttribute('data-bs-theme') === 'dark') ? '#f2ece4' : '#333333'
+          color: document.documentElement.getAttribute('data-bs-theme') === 'dark'
+            ? '#f2ece4'
+            : '#333333'
         },
         tooltip: {
           callbacks: {
             label: function (context) {
-              const total = context.dataset.data.reduce((a, b) => a + b, 0);
-              const pct = total > 0 ? ((context.raw / total) * 100).toFixed(2) : 0;
+              const total = context.dataset.data.reduce((a,b) => a + b, 0);
+              const pct   = total > 0 ? ((context.raw / total) * 100).toFixed(2) : 0;
               return `${context.label}: ${context.raw} (${pct}%)`;
             }
           }
@@ -758,25 +857,27 @@ function renderGraficos(data) {
         legend: {
           position: 'bottom',
           labels: {
-            color: (document.documentElement.getAttribute('data-bs-theme') === 'dark') ? '#f2ece4' : '#333333'
+            color: document.documentElement.getAttribute('data-bs-theme') === 'dark'
+              ? '#f2ece4'
+              : '#333333'
           }
         }
       }
     }
   });
 
-  // ----------------------------------------
-  // 6.9) NUEVO: Bar Chart -> Número de Pacientes por Año
-  // ----------------------------------------
-  const countYear = {};
+  // ------------------------------------------------------------------------
+  // 7.10) Bar: Número de Pacientes por Año
+  // ------------------------------------------------------------------------
+  const countYear   = {};
   data.forEach(p => {
     const y = p.year || 'Desconocido';
     countYear[y] = (countYear[y] || 0) + 1;
   });
-  const anos = Object.keys(countYear).sort((a, b) => a - b);
+  const anos        = Object.keys(countYear).sort((a, b) => a - b);
   const valoresYear = anos.map(y => countYear[y]);
   const coloresBarYear = anos.map((_, i) =>
-    (document.documentElement.getAttribute('data-bs-theme') === 'dark')
+    document.documentElement.getAttribute('data-bs-theme') === 'dark'
       ? `rgba(212, 175, 55, 0.7)`
       : `rgba(201, 79, 109, 0.7)`
   );
@@ -801,7 +902,9 @@ function renderGraficos(data) {
           display: true,
           text: 'Número de Pacientes por Año',
           font: { size: 18 },
-          color: (document.documentElement.getAttribute('data-bs-theme') === 'dark') ? '#f2ece4' : '#333333'
+          color: document.documentElement.getAttribute('data-bs-theme') === 'dark'
+            ? '#f2ece4'
+            : '#333333'
         },
         tooltip: {
           callbacks: {
@@ -814,13 +917,25 @@ function renderGraficos(data) {
       },
       scales: {
         x: {
-          ticks: { color: (document.documentElement.getAttribute('data-bs-theme') === 'dark') ? '#f2ece4' : '#333333' },
+          ticks: {
+            color: document.documentElement.getAttribute('data-bs-theme') === 'dark'
+              ? '#f2ece4'
+              : '#333333'
+          },
           grid: { display: false }
         },
         y: {
           beginAtZero: true,
-          ticks: { color: (document.documentElement.getAttribute('data-bs-theme') === 'dark') ? '#f2ece4' : '#333333' },
-          grid: { color: (document.documentElement.getAttribute('data-bs-theme') === 'dark') ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' }
+          ticks: {
+            color: document.documentElement.getAttribute('data-bs-theme') === 'dark'
+              ? '#f2ece4'
+              : '#333333'
+          },
+          grid: {
+            color: document.documentElement.getAttribute('data-bs-theme') === 'dark'
+              ? 'rgba(255,255,255,0.1)'
+              : 'rgba(0,0,0,0.1)'
+          }
         }
       }
     }
